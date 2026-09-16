@@ -109,33 +109,154 @@ Sau khi lưu, tab *Recent Deliveries* phải có response 200.
 
 ## 5. Cấu hình Nginx UI cho vehicle.hoha.dev
 
-File mẫu: `deploy/nginx-ui/vehicle.hoha.dev.conf`. Tên menu dưới đây có thể khác đôi chút tùy phiên bản Nginx UI — tôi chưa đối chiếu với bản bạn đang chạy.
+Dự án có **hai** file cấu hình nginx, đừng nhầm:
+
+| File | Chạy ở đâu | Có cần sửa không |
+|---|---|---|
+| `deploy/nginx/default.conf` | nginx **bên trong** container app, nghe port 80 của container | Không. Được copy vào image lúc build. |
+| `deploy/nginx-ui/vehicle.hoha.dev.conf` | nginx do **Nginx UI** quản lý trên server, nghe 80/443 public, chuyển request về container | Có. Dán vào Nginx UI theo các bước dưới. |
+
+Request đi như sau:
+
+```
+Trình duyệt ──https──▶ Nginx UI (443, vehicle.hoha.dev) ──http──▶ 127.0.0.1:6666 ──▶ container nginx (80) ──▶ dist/
+```
+
+Tên menu Nginx UI dưới đây có thể khác đôi chút tùy phiên bản — tôi chưa đối chiếu với bản bạn đang chạy.
 
 ### 5.1 Chọn địa chỉ upstream
 
-`proxy_pass` phải trỏ tới chỗ nginx của Nginx UI thật sự gọi được:
+Dòng `server ...;` trong block `upstream vehicle_viewer` phải là địa chỉ mà nginx của Nginx UI gọi được:
 
-| Nginx UI chạy thế nào | Upstream | Việc cần làm thêm |
+| Nginx UI chạy thế nào | Dòng upstream | Việc cần làm thêm |
 |---|---|---|
-| Cài trên host, hoặc container `network_mode: host` | `127.0.0.1:6666` | Không có. Dùng nguyên file mẫu. |
-| Container Docker thường (bridge, ví dụ `uozi/nginx-ui` map `80:80`, `443:443`) | `vehicle-viewer:80` | Nối container Nginx UI vào network của app: `docker network connect vehicle-viewer_default <tên-container-nginx-ui>`. Trong đó `127.0.0.1` là chính container Nginx UI, nên file mẫu sẽ trả 502. |
+| Cài trên host, hoặc container `network_mode: host` | `server 127.0.0.1:6666;` | Không có. |
+| Container Docker thường (bridge, ví dụ `uozi/nginx-ui` map `80:80`, `443:443`) | `server vehicle-viewer:80;` | `docker network connect vehicle-viewer_default <tên-container-nginx-ui>`. Trong container này `127.0.0.1` là chính Nginx UI, để `127.0.0.1:6666` sẽ trả 502. |
 
 Với trường hợp container: `docker compose down` xóa network `vehicle-viewer_default` và mất kết nối ở trên; pipeline chỉ dùng `up` nên không bị. Nếu từng chạy `down`, chạy lại lệnh `docker network connect`.
 
-### 5.2 Tạo site (HTTP trước)
+Mọi config bên dưới viết cho trường hợp cài trên host. Trường hợp container chỉ đổi đúng dòng upstream.
+
+### 5.2 Bước 1 — site HTTP (chưa có chứng chỉ)
 
 1. *Sites → Sites List → Add Site*, tên `vehicle.hoha.dev`.
-2. Chuyển sang chế độ sửa code (Advanced / Code Editor), dán **phần chưa comment** của file mẫu (block `upstream` + `server` port 80), sửa upstream theo bảng 5.1 nếu cần.
-3. Save → **Enable**. Nginx UI chạy `nginx -t` rồi reload; nếu báo lỗi cú pháp thì không có gì bị áp dụng.
+2. Chuyển sang chế độ sửa code (Advanced / Code Editor), xóa nội dung mặc định, dán nguyên đoạn này:
+
+```nginx
+upstream vehicle_viewer {
+    server 127.0.0.1:6666;          # container Nginx UI: server vehicle-viewer:80;
+    keepalive 16;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name vehicle.hoha.dev;
+
+    # Let's Encrypt gọi vào đây để xác minh domain; 9180 là port challenge mặc định của Nginx UI.
+    location /.well-known/acme-challenge {
+        proxy_set_header Host $host;
+        proxy_pass http://127.0.0.1:9180;
+    }
+
+    location / {
+        proxy_pass http://vehicle_viewer;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";          # giữ keepalive tới upstream
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+3. Save → **Enable**. Nginx UI chạy `nginx -t` rồi reload; báo lỗi cú pháp thì config không được áp dụng.
 4. Kiểm tra: `curl -I http://vehicle.hoha.dev/` → `200`.
 
-### 5.3 Cấp chứng chỉ Let's Encrypt
+Giải thích từng phần:
 
-1. Mở lại site → bật HTTPS / thêm server `listen 443 ssl` → bật **Encrypt with Let's Encrypt** (HTTP-01).
-2. Nginx UI tự thêm `location /.well-known/acme-challenge` proxy về port challenge của nó (mặc định `9180`, theo https://nginxui.com/guide/config-cert.html). Đừng xóa location này: nó cần cho lần gia hạn tự động (mặc định khi còn ≤ 30 ngày).
-3. Cấp xong, trang *Certificates* hiện đường dẫn `ssl_certificate` / `ssl_certificate_key`. Đặt đúng hai đường dẫn đó vào block `server` 443 (phần comment trong file mẫu), đổi `location /` của block 80 thành `return 301 https://$host$request_uri;`, Save.
+| Dòng | Tác dụng |
+|---|---|
+| `upstream vehicle_viewer` + `keepalive 16` | Giữ tối đa 16 kết nối mở sẵn tới container, không phải mở kết nối TCP mới cho mỗi file JS/audio. Cần đi cùng `proxy_http_version 1.1` và `Connection ""`. |
+| `server_name vehicle.hoha.dev` | Chỉ request có Host này mới vào site. Domain khác trỏ cùng IP không bị phục vụ app. |
+| `location /.well-known/acme-challenge` | Chuyển request xác minh domain cho Nginx UI. Nếu Nginx UI tự chèn một block tương tự khi cấp chứng chỉ thì giữ một block, xóa bản trùng (trùng location → `nginx -t` lỗi). |
+| `proxy_set_header Host $host` | Container nhận đúng Host gốc. |
+| `X-Real-IP`, `X-Forwarded-For` | Log trong container thấy IP thật của người dùng thay vì IP của proxy. |
+| `X-Forwarded-Proto` | Cho container biết request gốc là http hay https. |
+
+### 5.3 Bước 2 — cấp chứng chỉ Let's Encrypt
+
+1. Mở lại site → bật **Encrypt with Let's Encrypt** (HTTP-01) cho `vehicle.hoha.dev`.
+2. Chờ báo thành công. Vào *Certificates*, ghi lại hai đường dẫn: file certificate (fullchain) và file private key.
+3. Nếu lỗi: kiểm tra `dig +short vehicle.hoha.dev` ra đúng IP server, port 80 mở từ Internet, `curl -i http://vehicle.hoha.dev/.well-known/acme-challenge/test` không được trả về trang HTML của app (trả HTML của app nghĩa là request chưa đi vào location challenge).
 
 Nếu DNS đi qua Cloudflare với proxy bật (mây cam) mà cấp chứng chỉ lỗi, chuyển bản ghi sang *DNS only* để cấp, bật proxy lại sau đó và đặt SSL mode **Full (strict)**.
+
+### 5.4 Bước 3 — config cuối cùng (HTTPS + redirect)
+
+Thay toàn bộ nội dung site bằng đoạn dưới (cũng là nội dung file `deploy/nginx-ui/vehicle.hoha.dev.conf`). **Sửa hai dòng `ssl_certificate` / `ssl_certificate_key`** thành đúng đường dẫn đã ghi ở bước 2 — đường dẫn trong mẫu chỉ là ví dụ, để nguyên thì `nginx -t` báo không tìm thấy file.
+
+```nginx
+upstream vehicle_viewer {
+    server 127.0.0.1:6666;          # container Nginx UI: server vehicle-viewer:80;
+    keepalive 16;
+}
+
+# HTTP: chỉ phục vụ xác minh Let's Encrypt (cần cho gia hạn tự động), còn lại chuyển sang HTTPS.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name vehicle.hoha.dev;
+
+    location /.well-known/acme-challenge {
+        proxy_set_header Host $host;
+        proxy_pass http://127.0.0.1:9180;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name vehicle.hoha.dev;
+
+    # Thay bằng đường dẫn trên trang Certificates của Nginx UI.
+    ssl_certificate     /etc/nginx/ssl/vehicle.hoha.dev/fullchain.cer;
+    ssl_certificate_key /etc/nginx/ssl/vehicle.hoha.dev/private.key;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    # App tĩnh, không có endpoint upload.
+    client_max_body_size 1m;
+
+    location / {
+        proxy_pass http://vehicle_viewer;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+}
+```
+
+Khác với bước 1:
+
+| Thay đổi | Tác dụng |
+|---|---|
+| Block 80: `location /` thành `return 301 https://...` | Ai gõ `http://` đều được chuyển sang `https://`. Location ACME vẫn giữ để Nginx UI gia hạn chứng chỉ (mặc định khi còn ≤ 30 ngày) mà không bị redirect. |
+| Block 443 với `ssl_certificate*` | Nginx UI giải mã TLS; container phía sau chỉ nhận HTTP thường. |
+| `http2 on` | Tải song song JS, CSS, 20 file audio qua một kết nối. Cần nginx ≥ 1.25.1; bản cũ hơn thì xóa dòng này và viết `listen 443 ssl http2;`. |
+| `Strict-Transport-Security` | Trình duyệt nhớ 1 năm là domain này chỉ dùng HTTPS. Chỉ bật khi HTTPS đã chạy ổn: bật rồi mà chứng chỉ hỏng thì Safari không cho người dùng bỏ qua cảnh báo. |
+| `X-Forwarded-Proto https` | Ghi cố định vì block này chỉ nhận HTTPS. |
+
+Save → kiểm tra theo mục 6.
 
 ## 6. Kiểm tra sau khi deploy
 
@@ -169,12 +290,12 @@ Build Jenkins tiếp theo sẽ deploy lại bản mới nhất trên `main`; mu�
 - Build image không cache: 5/5 test pass trong bước build, `vite build` thành công.
 - Container lên `healthy`; `/`, `/healthz`, file JS (gzip, cache 1 năm), `/audio/vi/*.m4a` (`audio/x-m4a`, Range → 206) trả đúng; asset không tồn tại → 404.
 - `deploy.sh`: deploy 101 → 102 thành công; image 103 có healthcheck luôn lỗi → quay về 102, exit 1, app vẫn trả 200.
-- File Nginx UI mẫu (đã bỏ comment, chứng chỉ tự ký): `nginx -t` pass; proxy qua HTTPS/HTTP2 tới container trả 200 và 206 cho audio.
+- Hai config ở mục 5.2 và 5.4 (chép thẳng từ file này, chứng chỉ tự ký): `nginx -t` pass. Chạy config 5.4 với nginx thường, upstream `vehicle-viewer:80`: `http://…/xe` → 301 sang `https://vehicle.hoha.dev/xe`; `/.well-known/acme-challenge/test` → 502 (được chuyển tới port 9180, không bị redirect; 502 vì máy dev không có gì nghe port đó); HTTPS → HTTP/2 200 kèm `strict-transport-security`; audio Range → 206.
 
 Chưa kiểm tra:
 
 - Jenkins thật (chưa chạy `Jenkinsfile` trên Jenkins nào), GitHub webhook.
-- Nginx UI thật: tên menu, vị trí file chứng chỉ, cách nó chèn location ACME.
+- Nginx UI thật: tên menu, đường dẫn file chứng chỉ, Nginx UI có tự chèn location ACME trùng với block trong mục 5.2 hay không.
 - Cấp chứng chỉ Let's Encrypt thật cho `vehicle.hoha.dev`, DNS.
 - `docker compose` plugin trên Linux (máy dev dùng bản standalone).
 - iPad/Safari thật qua domain.
