@@ -1,0 +1,74 @@
+/* Specificity keeps the original presentation intact outside the opted-in mode. */
+body .header { gap:16px; }
+.settings-button,.focus-button { display:flex;align-items:center;justify-content:center;gap:8px;min-width:48px;min-height:48px;border:1px solid #dcded4;border-radius:24px;background:transparent;padding:10px;font-size:11px; }
+.header .sound-button { margin-left:auto; }
+.garage-dialog { width:min(540px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid #e0e2d5;border-radius:24px;padding:26px;color:#273d37;background:#f8f7f2;box-shadow:0 24px 90px #273d3733; }
+.garage-dialog::backdrop { background:#20372b88; }
+.dialog-heading { display:flex;align-items:center;justify-content:space-between;gap:16px; }
+.dialog-heading h2 { margin:0;font-size:23px; }
+.dialog-close { flex-shrink:0;width:48px;height:48px;border-radius:50%;font-size:30px;background:#e9ecdf; }
+.settings-dialog p { font-size:13px;line-height:1.8;color:#697565; }
+.settings-dialog fieldset { border:0;padding:0;margin:20px 0; }
+.settings-dialog legend { margin-bottom:12px;font-size:13px; }
+.settings-dialog label { display:flex;align-items:center;gap:14px;padding:18px;margin:10px 0;border:2px solid #dce1d1;border-radius:16px;cursor:pointer; }
+.settings-dialog label:has(:checked) { border-color:#d9824f;background:#fff2e5; }
+.settings-dialog input { width:22px;height:22px;accent-color:#d4774a;flex-shrink:0; }
+.settings-dialog strong,.settings-dialog small { display:block; }
+.settings-dialog small { margin-top:6px;font-size:12px;line-height:1.7;color:#697565; }
+.settings-done { width:100%;min-height:52px; }
+.vehicle-picker-button,.parts-scroll { display:none; }
+.vehicle-dialog { width:min(800px,calc(100% - 32px)); }
+.vehicle-picker-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:20px; }
+.vehicle-picker-grid a { position:relative;display:block;background:#eeeee5;border:3px solid transparent;border-radius:20px;padding:8px; }
+.vehicle-picker-grid a[aria-current] { border-color:#e87645;background:#fff1e5; }
+.vehicle-picker-grid .vehicle-picture { height:110px;margin:0; }
+.vehicle-check { position:absolute;right:8px;top:8px;border-radius:50%;background:#273d37;color:white;width:26px;height:26px;text-align:center; }
+body.child-mode .home .hero,body.child-mode .home .section-heading,body.child-mode .home .card-top,body.child-mode .home .card-bottom,body.child-mode .how-it-works,body.child-mode footer { display:none; }
+body.child-mode .home .collection { padding:24px 0; }
+body.child-mode .home .collection-grid { grid-template-columns:repeat(3,minmax(0,1fr));gap:18px; }
+body.child-mode .home .vehicle-card { padding:18px; }
+body.child-mode .home .vehicle-picture { height:180px;margin:0; }
+body.child-mode .part-button>span { display:none; }
+body.child-mode .part-button .part-picture { width:64px;height:60px; }
+body.child-mode .part-button.selected { border:3px solid #e87645; }
+body.child-mode .viewer-toolbar button>span,body.child-mode .zoom-controls>span,body.child-mode .view-presets button>span,body.child-mode .view-presets>span,body.child-mode .guide-button>span { display:none; }
+body.child-mode .viewer-toolbar svg { width:28px;height:28px; }
+body.child-mode .explode-button { min-width:64px; }
+body.child-mode .viewer-toolbar .explode-button:after { content:'↔';font-size:26px; }
+body.child-mode .viewer-toolbar .explode-button.is-exploded:after { content:'↦↤';font-size:22px; }
+body.child-mode .view-presets button svg { width:34px;height:34px; }
+body.focus-view { overflow:hidden; }
+body.focus-view #app { height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+body.focus-view .header { width:100%;max-width:none;height:68px;min-height:68px;padding:6px 18px;gap:12px; }
+body.focus-view .header nav,body.focus-view .header .brand,body.focus-view .header .sound-button>span,body.focus-view .header .settings-button>span { display:none; }
+body.focus-view .vehicle-picker-button { display:flex;align-items:center;gap:8px;background:#e9ecdf;border:1px solid #d9dece;border-radius:16px;min-height:52px;padding:0 12px; }
+body.focus-view .vehicle-picker-button .vehicle-picture { width:80px;height:48px;margin:0; }
+body.focus-view .detail { flex:1;min-height:0;width:100%;max-width:none;margin:0;padding:10px 16px 12px; }
+body.focus-view .breadcrumbs,body.focus-view .detail-heading,body.focus-view .panel-heading,body.focus-view .selected-part,body.focus-view .progress-area,body.focus-view .stage-label,body.focus-view .stage-bottom,body.focus-view .viewer-caption,body.focus-view .explosion-slider { display:none; }
+body.focus-view .explorer { height:100%;grid-template-columns:minmax(0,1fr) 104px;gap:12px;padding:0;align-items:stretch; }
+body.focus-view .viewer-column { position:static;display:grid;grid-template-rows:minmax(0,1fr) auto auto;min-height:0;padding:0;background:transparent; }
+body.focus-view .detail .stage { height:auto;min-height:0; }
+body.focus-view .viewer-toolbar { padding:8px 14px;flex-wrap:nowrap; }
+body.focus-view .viewer-toolbar button { min-height:52px; }
+body.focus-view .view-presets { margin:6px 0 0;gap:8px;flex-wrap:nowrap; }
+body.focus-view .view-presets button { min-height:48px;justify-content:center; }
+body.focus-view .parts-panel { height:100%;min-height:0;min-width:0;padding:6px;display:flex;flex-direction:column;gap:6px; }
+body.focus-view .parts-list { display:flex;flex-direction:column;gap:8px;min-height:0;overflow:auto;padding:3px;overscroll-behavior:contain;scrollbar-width:thin; }
+body.focus-view .part-button { flex-shrink:0;width:100%;min-height:80px;padding:6px 2px;font-size:10px;text-align:center; }
+body.focus-view .parts-scroll { display:block;flex-shrink:0;width:100%;height:44px;background:#e9ecdf;border-radius:10px;font-size:28px;line-height:1; }
+body.focus-view .parts-scroll { writing-mode:vertical-lr; }
+body.focus-view .guide-button { left:12px;top:12px; }
+body.focus-view .stage-part { right:12px;top:12px; }
+@media(max-width:760px) { .settings-button>span { display:none; } body .header { gap:8px; } body .header .brand { font-size:17px; } .vehicle-picker-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } body.child-mode .home .collection-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } body.child-mode .home .vehicle-picture { height:120px; } }
+@media(orientation:portrait),(max-width:600px) {
+ body.focus-view .detail { padding:8px; }
+ body.focus-view .explorer { grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 98px;gap:8px; }
+ body.focus-view .parts-panel { flex-direction:row;align-items:stretch; }
+ body.focus-view .parts-list { flex:1;min-width:0;flex-direction:row; }
+ body.focus-view .part-button { width:80px;min-height:72px; }
+ body.focus-view .parts-scroll { width:44px;height:auto;writing-mode:horizontal-tb; }
+ body.focus-view .viewer-toolbar { padding:6px;gap:4px; }
+ body.focus-view .view-presets button { padding:4px 8px;font-size:10px; }
+ body.focus-view .header { padding:6px 8px;gap:6px; }
+ body.focus-view .stage-part { max-width:60%; }
+}

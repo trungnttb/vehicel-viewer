@@ -37,6 +37,13 @@ Máy xúc bánh xích dùng cần điều khiển; các xe đường bộ có v�
 
 ## Ma trận kiểm tra
 
+### Chế độ gia đình (2026-09-16)
+
+- Nút Giao diện trên header cho bố mẹ chọn giao diện hiện tại hoặc Dành cho bé. Mặc định giữ UI cũ; lựa chọn được lưu riêng trên trình duyệt bằng localStorage, không gửi lên server. Storage lỗi không ngăn đổi chế độ trong phiên.
+- Chế độ bé dùng trang chọn xe bằng hình; detail toàn khung web, không phải native fullscreen. Dải bộ phận cuộn dọc bên phải ở landscape, cuộn ngang bên dưới ở portrait; có nút cuộn thay cho thao tác kéo.
+- Bảng chọn xe là native dialog, có nút đóng, Escape và trả focus. Chuyển chế độ giữ canvas, góc nhìn và bộ phận được chọn; đổi xe giữ chế độ nhưng reset camera theo xe mới.
+- Đã kiểm tra browser viewport 1024×768, 820×1180 và 390×844: dải hình không gây tràn trang; sửa min-width của grid/flex để portrait không tràn. Đã thử nhớ chế độ ở trang mới, chọn xe qua dialog, chọn bộ phận, zoom, tách và góc nhìn. Kiểm thử này không xác nhận Safari/iPad vật lý hay khả năng tự hiểu biểu tượng của bé.
+
 - Desktop/browser viewport: 1024×768, 1180×820, 1024×650 ngang; 820×1180 dọc; 390×844 hẹp.
 - Kiểm tra thao tác: chạm mô hình, chọn hình, tách–ráp, zoom tự tách, đặt lại, góc nhìn, phát lại, về trang chủ; hình lắp/tách không ra ngoài khung.
 - Regression tự động: tỷ lệ sedan, bánh tròn, part ID đầy đủ, không drift sau tách–ráp, highlight khôi phục, pinch/drag/cancel không chọn nhầm, audio asset đầy đủ.

@@ -8,6 +8,7 @@ import { fittingFov } from './camera-fit.js';
 import { createTapTracker } from './tap-tracker.js';
 import { partIllustration } from './part-illustrations.js';
 import { audioMessages } from './audio-messages.js';
+import { installDisplayMode } from './display-mode.js';
 
 const icons = {
   arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
@@ -165,6 +166,7 @@ function mount() {
     document.querySelector('#reset').addEventListener('click', () => { resetView(); updateSelection(); speakMessage('reset'); });
     updateSelection();
   }
+  installDisplayMode({ detail, vehicle, resize, stopSpeech });
   window.scrollTo(0,0);
 }
 function setView(view) {
@@ -257,6 +259,7 @@ function resize() {
   if (!renderer) return;
   const host=document.querySelector('#canvas-host'); if(!host) return;
   const {width,height}=host.getBoundingClientRect();
+  if (!width || !height) return;
   renderer.setSize(width,height,false); camera.aspect=width/height;
   // Widen the lens on portrait screens so a fully separated car still fits.
   fittedFov = Math.max(36, THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(46)/2)/camera.aspect)));
@@ -269,7 +272,7 @@ if (renderer) {
   let previous=performance.now();
   const viewBounds=new THREE.Box3();
   renderer.setAnimationLoop(now=>{
-    if (document.hidden || (touchDevice.matches && now-previous < 1000/30)) return;
+    if (document.hidden || !canvas.clientWidth || !canvas.clientHeight || (touchDevice.matches && now-previous < 1000/30)) return;
     const dt=Math.min((now-previous)/1000,.05);previous=now;
     controls.update();
     const target=detail?(manualExplosion ?? (1-THREE.MathUtils.smoothstep(controls.getDistance(),7.0,9.3))):0;
@@ -283,6 +286,7 @@ if (renderer) {
       const slider=document.querySelector('#separation'); if(document.activeElement!==slider) slider.value=Math.round(explosion*100);
       const btn=document.querySelector('#explode'); btn.classList.toggle('is-exploded',target>.5);
       btn.setAttribute('aria-pressed',String(target>.5));
+      btn.setAttribute('aria-label',target>.5?'Ráp lại chiếc xe':'Tách bộ phận');
       btn.querySelector('span').textContent=target>.5?'Ráp lại chiếc xe':'Tách bộ phận';
     }
     renderer.render(scene,camera);

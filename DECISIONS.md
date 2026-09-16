@@ -1,5 +1,13 @@
 # Gara tí hon
 
+## 2026-09-16 — Hai chế độ giao diện cho gia đình
+
+- Giữ giao diện hiện tại làm mặc định. Nút Giao diện trên header mở cài đặt cho bố mẹ; lựa chọn `standard` / `child` lưu bằng localStorage với key `little-garage:display-mode`.
+- Chế độ bé: trang chọn xe bằng hình; detail tự mở toàn khung trình duyệt, bảng bộ phận hình cuộn bên phải khi ngang và bên dưới khi dọc. Nhãn truy cập và tên bộ phận được chọn vẫn giữ.
+- Chọn xe bằng bảng hình dạng dialog, không dùng dropdown chữ. Giữ zoom, tách/lắp, reset, các góc nhìn, hướng dẫn và phát lại âm thanh.
+- Đổi chế độ không tạo lại renderer/model hay reset góc nhìn, lựa chọn. Nút mở rộng/thu gọn chỉ đổi cách bố trí, không đổi cài đặt đã lưu.
+- Đây là toàn khung web, không yêu cầu native Fullscreen API hoặc ẩn thanh Safari. Giữ Vite + Three.js; chưa chuyển React. Nếu storage bị chặn, dùng lựa chọn trong phiên và thông báo chưa lưu được.
+
 ## 2026-09-16 — Bản mẫu đã thống nhất
 
 - Dành cho bé 6 tuổi: chọn phương tiện → xem 3D → zoom để tách các phần → chạm nghe tên tiếng Việt.
