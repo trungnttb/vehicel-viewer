@@ -1,0 +1,9 @@
+{
+  "name": "little-garage",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "vite --host 0.0.0.0", "build": "vite build", "test": "node --test", "preview": "vite preview --host 0.0.0.0", "audio:generate": "node scripts/generate-audio.mjs" },
+  "dependencies": { "three": "^0.183.0" },
+  "devDependencies": { "vite": "^7.3.0" }
+}
