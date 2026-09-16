@@ -31,7 +31,7 @@ Tham khảo tỷ lệ sedan từ [catalogue Accent 2021 Việt Nam](https://www.
 
 Sau chỉnh: cabin thấp, mui cong, kính nghiêng, grille thuôn, đèn vuốt, đèn hậu vòng sang hông. Bánh giữ tiết diện tròn. Geometry được gộp theo vật liệu trong cùng nhóm tách, không gộp các bánh hay cửa chuyển động độc lập. Mô hình hiện có 50 mesh, khoảng 69.628 tam giác; đây là số đếm geometry, không phải số đo FPS hay chứng nhận hiệu năng iPad.
 
-Các xe mới được dựng bằng cùng bộ primitive nhưng có silhouette và bộ phận riêng, thường khoảng 11–19 nghìn tam giác. Camera căn theo bounds thực trong không gian camera, có khoảng đệm để xe tách không chạm mép khung. Giữ một WebGL canvas và dispose geometry/material của xe cũ khi chuyển route.
+Các xe mới được dựng bằng cùng bộ primitive nhưng có silhouette và bộ phận riêng, thường khoảng 11–19 nghìn tam giác. Camera căn theo góc hộp của từng mesh (không dùng một hộp bao cả xe) trong vùng an toàn của khung: ±0,92 ngang, 0,9 phía trên, −0,78 phía dưới vì thanh nút tách/zoom/đặt lại đè lên mép dưới khung. Góc nhìn khi nghỉ được chọn để xe lắp không đổi cỡ khi xoay một vòng, và khi tách xe chỉ nhỏ đi tối đa 15%; bộ phận bay ra 75% quãng `delta` của factory (`separationSpread`). Giữ một WebGL canvas và dispose geometry/material của xe cũ khi chuyển route.
 
 Máy xúc bánh xích dùng cần điều khiển; các xe đường bộ có vô lăng. Cơ sở về joystick: [Caterpillar — Excavator Joystick Controls](https://www.cat.com/en_US/articles/for-owners/excavator-joystick-controls.html/). Đây là quyết định mô hình hóa đúng loại máy, không phải đổi cách bé thao tác web.
 

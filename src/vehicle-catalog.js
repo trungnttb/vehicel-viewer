@@ -49,5 +49,7 @@ export const vehicles=[
   entry('mixer','Xe trộn bê tông','MIX','#689b8f','Xanh bạc hà',createMixer,[...base,'drum-support','drum','hopper','chute']),
   entry('container','Xe container','HAUL','#ca7958','Cam đất · Xanh',createContainer,[...base,'trailer','container','container-doors','coupling']),
 ];
+// Parts travel this share of their authored delta, so the separated vehicle needs less room in the viewer.
+export const separationSpread=.75;
 export const vehicleById=id=>vehicles.find(vehicle=>vehicle.id===id);
 export const allParts=[...new Map(vehicles.flatMap(v=>v.parts).map(p=>[p.id,p])).values()];

@@ -34,3 +34,9 @@
 - Mỗi bộ phận có hình và audio; có 45 file âm thanh dùng chung theo ID có cùng ý nghĩa. Camera tự căn theo bounds để cần cẩu dài và trạng thái tách không bị cắt khỏi khung.
 - Bổ sung vô lăng cho các xe đường bộ. Máy xúc bánh xích dùng hai cần điều khiển; tham khảo [Caterpillar về điều khiển joystick](https://www.cat.com/en_US/articles/for-owners/excavator-joystick-controls.html/).
 - Theo phản hồi thực tế, kéo dài cần cẩu và đưa đường cáp/móc ra phía trước cabin. Regression kiểm tra khoảng hở ở 0%, 25%, 50%, 75% và 100% độ tách.
+
+## 2026-09-17 — Xe to hơn trong khung xem
+
+- User muốn xe lắp to sát khung hơn. Camera căn theo hình dạng thật của xe thay cho góc nhìn tối thiểu 36°; xe lắp ở chế độ bé 1180×820 chiếm 43–67% bề ngang (trước 36–41%).
+- User thấy tách bộ phận làm xe nhỏ đi rõ. Chọn: bộ phận bay ra 75% quãng cũ và xe chỉ nhỏ đi tối đa 15% khi tách, đổi lại xe lắp không to tối đa được.
+- User thấy cần cẩu còn bé vì khung phải chứa đầu cần cao. Chọn: hạ đầu cần từ y 4.1 xuống 3.4 (cần thoải hơn, ngắn hơn ~8%; móc hạ theo, vẫn treo trước cabin) và giảm độ nâng cần khi tách từ 1.1 xuống 0.45. Thân xe tải của cần cẩu rộng 36% → 45% khung ở chế độ bé 1180×820.

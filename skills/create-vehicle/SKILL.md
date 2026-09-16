@@ -19,7 +19,7 @@ Deliver a recognizable toy vehicle with independently selectable educational par
 - Current factory returns `{ root, bounds, explode(amount), select(id) }`. `bounds` is assembled geometry. Recompute it after changing shape.
 - Each part has a stable ID, Vietnamese name, short child-friendly description, English label and color. Every selectable mesh has a matching `userData.part`.
 - Multiple physical objects may share a name (four wheels) while living in different moving groups. Never combine their explosion transforms.
-- Current groups start at the origin, with geometry in assembled coordinates. `explode()` writes `delta × clamp(amount,0,1)` to their positions. If you introduce nonzero group origins, preserve their base transforms explicitly.
+- Current groups start at the origin, with geometry in assembled coordinates. `explode()` writes `delta × clamp(amount,0,1)` to their positions; the app calls it with `amount × separationSpread` (0.75, `src/vehicle-catalog.js`), so check clearances at that spread. If you introduce nonzero group origins, preserve their base transforms explicitly.
 - Model appropriate openings: wheel arches around tires, an engine cavity where applicable, and separated roof/doors exposing interior parts. Do not impose sedan hood/trunk parts on buses or other vehicle types. Check seams and collisions from both sides.
 - Keep initial emissive values so selecting another part or resetting restores every material, including lights.
 

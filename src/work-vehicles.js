@@ -59,18 +59,18 @@ export function createCrane() {
   k.cylinder(platform,.67,.23,[.5,1.02,0],'dark',[0,0,0]);
   k.box(platform,[1.5,.44,1.15],[.66,1.3,0]);
   k.box(platform,[.35,.56,1.16],[1.32,1.54,0]);
-  const boom=k.group('boom',[-.35,1.1,0]);
+  const boom=k.group('boom',[-.35,.45,0]);
   k.beam(boom,[.8,1.6,0],[-.72,3.0,0],.4,.43);
-  k.beam(boom,[-.5,2.8,0],[-3.1,4.1,0],.26,.28,'metal');
-  k.cylinder(boom,.13,.36,[-3.1,4.1,0],'dark');
+  k.beam(boom,[-.5,2.8,0],[-3.1,3.4,0],.26,.28,'metal');
+  k.cylinder(boom,.13,.36,[-3.1,3.4,0],'dark');
   k.cylinder(boom,.2,.6,[.8,1.6,0],'dark');
   const piston=k.group('hydraulics',[0,.5,.7]);
   k.beam(piston,[.2,1.35,.27],[-.35,2.46,.27],.1,.1,'metal');
   k.beam(piston,[.2,1.35,.27],[-.05,1.86,.27],.16,.16,'dark');
   const hook=k.group('hook',[-.6,.15,0]);
-  k.beam(hook,[-3.1,4.1,0],[-3.1,2.68,0],.025,.025,'dark');
-  k.box(hook,[.2,.25,.22],[-3.1,2.58,0],'dark');
-  k.mesh(hook,new THREE.TorusGeometry(.15,.047,8,20,Math.PI*1.55),'metal',[-3.1,2.33,0],[0,0,.2]);
+  k.beam(hook,[-3.1,3.4,0],[-3.1,1.98,0],.025,.025,'dark');
+  k.box(hook,[.2,.25,.22],[-3.1,1.88,0],'dark');
+  k.mesh(hook,new THREE.TorusGeometry(.15,.047,8,20,Math.PI*1.55),'metal',[-3.1,1.63,0],[0,0,.2]);
   const legs=k.group('stabilizers',[0,0,.5]);
   for(const x of [-.3,1.8])for(const s of [-1,1]) {
     k.box(legs,[.2,.18,.65],[x,.73,s*1.05],'metal');k.box(legs,[.16,.57,.16],[x,.4,s*1.3],'dark');k.box(legs,[.45,.08,.37],[x,.11,s*1.3],'dark');

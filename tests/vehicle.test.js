@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Box3, Vector3, PerspectiveCamera } from 'three';
+import { Box3, Vector3, PerspectiveCamera, Spherical } from 'three';
 import { createCar, partInfo } from '../src/car.js';
 import { createTapTracker } from '../src/tap-tracker.js';
 import { audioMessages } from '../src/audio-messages.js';
 import { statSync } from 'node:fs';
-import { vehicles, allParts, vehicleById } from '../src/vehicle-catalog.js';
+import { vehicles, allParts, vehicleById, separationSpread } from '../src/vehicle-catalog.js';
 import { illustratedPartIds } from '../src/part-illustrations.js';
-import { fittingFov } from '../src/camera-fit.js';
+import { safeFrame, maxSeparationShrink, outlineSamples, outlinePoints, outlineFov, restingFraming } from '../src/camera-fit.js';
 
 test('sedan silhouette, grounded wheels, and complete pickable part coverage', () => {
   const car=createCar();
@@ -98,20 +98,67 @@ for(const vehicle of vehicles.filter(v=>v.id!=='accent')) {
   });
 }
 
-test('all vehicles remain in frame when fully separated at closest zoom',()=>{
+function projectedExtent(model,camera) {
+  camera.updateProjectionMatrix();camera.updateMatrixWorld();model.root.updateMatrixWorld(true);
+  const point=new Vector3();const extent={left:Infinity,right:-Infinity,bottom:Infinity,top:-Infinity};
+  model.root.traverse(mesh=>{
+    if(!mesh.isMesh) return;
+    const position=mesh.geometry.attributes.position;
+    for(let i=0;i<position.count;i++) {
+      point.fromBufferAttribute(position,i).applyMatrix4(mesh.matrixWorld).project(camera);
+      extent.left=Math.min(extent.left,point.x);extent.right=Math.max(extent.right,point.x);
+      extent.bottom=Math.min(extent.bottom,point.y);extent.top=Math.max(extent.top,point.y);
+    }
+  });
+  return extent;
+}
+const insideSafeFrame=extent=>extent.left>=safeFrame.left-1e-6&&extent.right<=safeFrame.right+1e-6&&extent.bottom>=safeFrame.bottom-1e-6&&extent.top<=safeFrame.top+1e-6;
+const restOffset=new Vector3(-6.5,2.7,7.5);
+function framingPoints(model) {
+  const samples=outlineSamples(model.root);
+  model.explode(0);const assembled=outlinePoints(samples).map(point=>point.clone());
+  model.explode(separationSpread);const separated=outlinePoints(samples).map(point=>point.clone());
+  model.explode(0);
+  return {samples,assembled,separated};
+}
+const lensScale=fov=>Math.tan(fov*Math.PI/360);
+
+test('assembled vehicles fill the viewer without leaving the safe frame while orbiting',()=>{
   for(const vehicle of vehicles) {
-    const model=vehicle.factory();
-    const center=model.bounds.getCenter(new Vector3());center.y+=.2;
-    model.explode(1);const bounds=new Box3().setFromObject(model.root);
-    for(const aspect of [.85,1.5,2])for(const direction of [[-1,.42,1],[0,.22,1],[-.12,1,.12]]) {
+    const model=vehicle.factory();const {assembled,separated}=framingPoints(model);
+    for(const aspect of [.92,1.51,1.72]) {
       const camera=new PerspectiveCamera(36,aspect,.1,100);
-      camera.position.copy(center).addScaledVector(new Vector3(...direction).normalize(),6.6);
-      camera.lookAt(center);
-      camera.fov=fittingFov(bounds,camera,36);camera.updateProjectionMatrix();
-      for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]) {
-        const point=new Vector3(x,y,z).project(camera);
-        assert.ok(Math.abs(point.x)<.89 && Math.abs(point.y)<.89,`${vehicle.id} clips at aspect ${aspect}`);
+      const {targetY,fov}=restingFraming(assembled,separated,model.bounds,camera,restOffset);
+      const center=model.bounds.getCenter(new Vector3());const target=new Vector3(center.x,targetY,center.z);
+      const orbit=new Spherical().setFromVector3(restOffset);let widest=0;
+      for(let i=0;i<8;i++) {
+        const step=orbit.clone();step.theta+=i/8*Math.PI*2+.1;
+        camera.position.setFromSpherical(step).add(target);camera.lookAt(target);camera.fov=fov;
+        const extent=projectedExtent(model,camera);
+        assert.ok(insideSafeFrame(extent),`${vehicle.id} leaves the safe frame at aspect ${aspect}`);
+        widest=Math.max(widest,(extent.right-extent.left)/(safeFrame.right-safeFrame.left),(extent.top-extent.bottom)/(safeFrame.top-safeFrame.bottom));
       }
+      assert.ok(widest>.6,`${vehicle.id} only fills ${Math.round(widest*100)}% of the viewer at aspect ${aspect}`);
+    }
+  }
+});
+
+test('separated vehicles stay in frame and shrink only a little when parts move apart',()=>{
+  for(const vehicle of vehicles) {
+    const model=vehicle.factory();const {samples,assembled,separated}=framingPoints(model);
+    for(const aspect of [.85,1.5,2]) {
+      const {targetY,fov}=restingFraming(assembled,separated,model.bounds,new PerspectiveCamera(36,aspect,.1,100),restOffset);
+      const center=model.bounds.getCenter(new Vector3());const target=new Vector3(center.x,targetY,center.z);
+      for(const [direction,distance] of [[restOffset.toArray(),restOffset.length()],[[-1,.42,1],6.6],[[0,.22,1],6.6],[[-.12,1,.12],6.6]]) {
+        const camera=new PerspectiveCamera(36,aspect,.1,100);
+        camera.position.copy(target).addScaledVector(new Vector3(...direction).normalize(),distance);
+        camera.lookAt(target);
+        model.explode(0);const together=outlineFov(outlinePoints(samples),camera,fov);
+        model.explode(separationSpread);camera.fov=outlineFov(outlinePoints(samples),camera,fov);
+        assert.ok(insideSafeFrame(projectedExtent(model,camera)),`${vehicle.id} clips at aspect ${aspect}`);
+        if(distance===restOffset.length()) assert.ok(1-lensScale(together)/lensScale(camera.fov)<=maxSeparationShrink+1e-6,`${vehicle.id} shrinks too much when separated at aspect ${aspect}`);
+      }
+      model.explode(0);
     }
   }
 });

@@ -2,9 +2,9 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { vehicles, vehicleById } from './vehicle-catalog.js';
+import { vehicles, vehicleById, separationSpread } from './vehicle-catalog.js';
 import { vehiclePicture } from './vehicle-pictures.js';
-import { fittingFov } from './camera-fit.js';
+import { outlineSamples, outlinePoints, outlineFov, restingFraming } from './camera-fit.js';
 import { createTapTracker } from './tap-tracker.js';
 import { partIllustration } from './part-illustrations.js';
 import { audioMessages } from './audio-messages.js';
@@ -46,7 +46,8 @@ window.speechSynthesis?.addEventListener('voiceschanged', loadVoices);
 
 const canvas = document.createElement('canvas');
 canvas.setAttribute('aria-label', 'Mô hình ô tô trắng 3D. Kéo để xoay, phóng to để tách bộ phận. Có thể chọn bộ phận bằng danh sách bên cạnh.');
-let renderer, scene, camera, controls, car, fittedFov = 36;
+let renderer, scene, camera, controls, car, fittedFov = 36, restingTargetY = 0, outline = [], assembledPoints = [], separatedPoints = [];
+const restOffset = new THREE.Vector3(-6.5,2.7,7.5);
 let webglError = false;
 try {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -115,8 +116,8 @@ function resetView() {
   if (!controls) return;
   controls.enableDamping = false; controls.update();
   const center = car.bounds.getCenter(new THREE.Vector3());
-  controls.target.set(center.x,center.y+.2,center.z);
-  camera.position.copy(controls.target).add(new THREE.Vector3(-6.5,2.7,7.5));
+  controls.target.set(center.x,restingTargetY,center.z);
+  camera.position.copy(controls.target).add(restOffset);
   controls.update(); controls.autoRotate = false;
   controls.enableDamping = true;
   manualExplosion = null; selected = null; car.select(null);
@@ -138,7 +139,12 @@ function mount() {
   selected = null; explosion = 0; manualExplosion = null;
   taps.clear();
   detail ? detailPage() : home();
-  if (!webglError) { document.querySelector('#canvas-host').append(canvas); car.explode(0); resetView(); resize(); }
+  if (!webglError) {
+    document.querySelector('#canvas-host').append(canvas); car.explode(0);
+    outline = outlineSamples(car.root); assembledPoints = outlinePoints(outline).map(point=>point.clone());
+    car.explode(separationSpread); separatedPoints = outlinePoints(outline).map(point=>point.clone()); car.explode(0);
+    resize(); resetView();
+  }
   document.querySelector('#sound').addEventListener('click', () => {
     sound = !sound; if (!sound) stopSpeech();
     const button=document.querySelector('#sound');
@@ -261,24 +267,26 @@ function resize() {
   const {width,height}=host.getBoundingClientRect();
   if (!width || !height) return;
   renderer.setSize(width,height,false); camera.aspect=width/height;
-  // Widen the lens on portrait screens so a fully separated car still fits.
-  fittedFov = Math.max(36, THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(46)/2)/camera.aspect)));
-  camera.fov = fittedFov + explosion*10;
+  const framing = restingFraming(assembledPoints,separatedPoints,car.bounds,camera,restOffset);
+  const shift = framing.targetY-restingTargetY;
+  fittedFov = framing.fov; restingTargetY = framing.targetY;
+  controls.target.y += shift; camera.position.y += shift; controls.update();
+  camera.fov = fittedFov;
   camera.updateProjectionMatrix();
 }
 window.addEventListener('resize',resize); window.addEventListener('hashchange',mount);
 mount();
 if (renderer) {
   let previous=performance.now();
-  const viewBounds=new THREE.Box3();
+  const livePoints=[];
   renderer.setAnimationLoop(now=>{
     if (document.hidden || !canvas.clientWidth || !canvas.clientHeight || (touchDevice.matches && now-previous < 1000/30)) return;
     const dt=Math.min((now-previous)/1000,.05);previous=now;
     controls.update();
     const target=detail?(manualExplosion ?? (1-THREE.MathUtils.smoothstep(controls.getDistance(),7.0,9.3))):0;
     explosion=reducedMotion.matches?target:THREE.MathUtils.damp(explosion,target,5,dt);
-    car.explode(explosion);
-    const desiredFov=fittingFov(viewBounds.setFromObject(car.root),camera,fittedFov+explosion*10);
+    car.explode(explosion*separationSpread);
+    const desiredFov=outlineFov(outlinePoints(outline,livePoints),camera,fittedFov);
     if (Math.abs(camera.fov-desiredFov)>.01) {
       camera.fov=desiredFov; camera.updateProjectionMatrix();
     }
