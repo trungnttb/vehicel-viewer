@@ -21,9 +21,11 @@
 - `src/style.css`: approved visual language and responsive layouts.
 - `docs/IPAD-UX.md`: researched choices, device test matrix and remaining real-device checks.
 - `DECISIONS.md`: accepted product decisions; update it when a decision changes.
+- `Dockerfile`, `docker-compose.yml`, `deploy/`, `Jenkinsfile`: static nginx image on 127.0.0.1:6666 behind Nginx UI at vehicle.hoha.dev; setup and verification limits in `docs/DEPLOY.md`.
 
 ## Commands and checks
 - `npm install`; `npm run dev -- --port 5173`; `npm run build`; `npm test`.
+- Image: `IMAGE_TAG=local docker compose build` (runs `npm test` and the build inside); `sh deploy/deploy.sh local`. Keep the app static: no backend in the container.
 - For geometry edits, inspect front, side, rear, three-quarter and separated states in the browser.
 - For interaction edits, run tap regression tests and try part picking, zoom, separation, reset and navigation.
 - Keep generated `dist/` and `node_modules/` out of source control. Do not replace the stack or add a backend for routine model work.
@@ -32,5 +34,5 @@
 
 ## Current boundaries
 - One live vehicle. Routes, copy and progress still contain Accent-specific data; make them vehicle-aware when adding another vehicle.
-- No account, tracking, ads, purchases or external deployment are part of the current app. Bundled narration is synthesized with the local Vietnamese Linh voice, not a human recording.
+- No account, tracking, ads or purchases are part of the current app. Deployment is a self-hosted static site (Jenkins → Docker → Nginx UI). Bundled narration is synthesized with the local Vietnamese Linh voice, not a human recording.
 - Do not add gamification, time pressure or a new visual direction without a product request.

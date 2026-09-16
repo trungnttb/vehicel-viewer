@@ -1,0 +1,12 @@
+name: vehicle-viewer
+
+services:
+  web:
+    build: .
+    image: vehicle-viewer:${IMAGE_TAG:-latest}
+    container_name: vehicle-viewer
+    restart: unless-stopped
+    # Bound to loopback: only the host reverse proxy (Nginx UI) should reach it.
+    # Set APP_BIND=0.0.0.0 when the proxy runs in a container without host networking.
+    ports:
+      - "${APP_BIND:-127.0.0.1}:6666:80"
