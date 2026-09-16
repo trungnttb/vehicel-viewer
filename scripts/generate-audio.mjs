@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { partInfo } from '../src/car.js';
+import { allParts } from '../src/vehicle-catalog.js';
 import { audioMessages } from '../src/audio-messages.js';
 
 if (process.platform !== 'darwin') throw new Error('This optional generator requires macOS say and afconvert. Existing audio files work on any platform.');
@@ -17,7 +17,7 @@ function run(command,args) {
   if (result.error || result.status !== 0) throw new Error(`${command}: ${result.error?.message || result.stderr}`);
   return result.stdout;
 }
-const recordings = [...partInfo.map(part=>[part.id,part.name]),...Object.entries(audioMessages)];
+const recordings = [...allParts.map(part=>[part.id,part.name]),...Object.entries(audioMessages)];
 for(const [id,text] of recordings) {
   const source=join(temporary,`${id}.aiff`);
   run('say',['-v','Linh (Vietnamese (Vietnam))','-r','150','-o',source,text]);

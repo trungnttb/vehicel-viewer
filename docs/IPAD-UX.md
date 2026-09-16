@@ -16,11 +16,11 @@ Bé 6 tuổi, có thể chưa đọc chữ, cầm iPad ngang. User thích UI/UX 
 
 ## Trải nghiệm hiện tại
 
-- Ngang: xe bên trái, bảng hình bên phải. Ở viewport ngang thấp, bảng hình cuộn riêng; phần tên/replay và điều khiển xe ở ngoài vùng cuộn đó.
+- Ngang: xe bên trái, bảng hình bên phải. Tên/replay nằm trên mô hình; bỏ thẻ mô tả lặp ở cột phải để ưu tiên ô hình. Ở viewport thấp hoặc xe có nhiều bộ phận, bảng hình cuộn riêng; điều khiển xe ở ngoài vùng cuộn đó.
 - Dọc iPad: khung xe phía trên, bảng hình phía dưới; khung xe giữ vị trí khi cuộn để bé thấy phản hồi.
-- 12 hình bộ phận: thân, nắp ca-pô, nóc, cửa, bánh, đèn, gương, cốp, động cơ, ghế, vô lăng, trục.
+- Bảy phương tiện, mỗi xe có danh sách hình riêng. Accent giữ 12 bộ phận; các xe mới thêm những phần như thùng hàng, cáng, cần nâng, móc cẩu, bánh xích, gầu xúc, bồn trộn và container.
 - Chạm nút loa để nghe cách chơi. Chạm một hình hoặc một bộ phận để nghe tên và làm sáng bộ phận đó.
-- 20 file âm thanh tiếng Việt: 12 tên, hướng dẫn và 7 hành động/góc nhìn. File được tổng hợp bằng giọng Linh trên macOS, không phải thu âm người thật.
+- 45 file âm thanh tiếng Việt: 37 tên bộ phận dùng chung, hướng dẫn và 7 hành động/góc nhìn. File được tổng hợp bằng giọng Linh trên macOS, không phải thu âm người thật.
 - Phát một âm thanh tại một thời điểm; đổi bộ phận, tắt âm thanh hoặc rời trang sẽ ngắt âm cũ. Nếu file lỗi, thử giọng thiết bị; nếu cả hai lỗi, hiện thông báo để phụ huynh hỗ trợ.
 - Kéo ra xa rồi trở lại, pinch thả từng ngón và pointer cancel không được coi là tap.
 - Không tự xoay xe trong lúc bé quan sát. Reduced-motion áp dụng cả cho chuyển động tách.
@@ -30,6 +30,10 @@ Bé 6 tuổi, có thể chưa đọc chữ, cầm iPad ngang. User thích UI/UX 
 Tham khảo tỷ lệ sedan từ [catalogue Accent 2021 Việt Nam](https://www.hyundaihadong.com.vn/ckfinder/userfiles/images/product/Accent-2021-catalogue-preview.pdf). Mô hình là phiên bản đồ chơi có cách điệu, không phải CAD chính xác.
 
 Sau chỉnh: cabin thấp, mui cong, kính nghiêng, grille thuôn, đèn vuốt, đèn hậu vòng sang hông. Bánh giữ tiết diện tròn. Geometry được gộp theo vật liệu trong cùng nhóm tách, không gộp các bánh hay cửa chuyển động độc lập. Mô hình hiện có 50 mesh, khoảng 69.628 tam giác; đây là số đếm geometry, không phải số đo FPS hay chứng nhận hiệu năng iPad.
+
+Các xe mới được dựng bằng cùng bộ primitive nhưng có silhouette và bộ phận riêng, thường khoảng 11–19 nghìn tam giác. Camera căn theo bounds thực trong không gian camera, có khoảng đệm để xe tách không chạm mép khung. Giữ một WebGL canvas và dispose geometry/material của xe cũ khi chuyển route.
+
+Máy xúc bánh xích dùng cần điều khiển; các xe đường bộ có vô lăng. Cơ sở về joystick: [Caterpillar — Excavator Joystick Controls](https://www.cat.com/en_US/articles/for-owners/excavator-joystick-controls.html/). Đây là quyết định mô hình hóa đúng loại máy, không phải đổi cách bé thao tác web.
 
 ## Ma trận kiểm tra
 

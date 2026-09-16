@@ -1,0 +1,14 @@
+// Lightweight catalog illustrations avoid running seven WebGL canvases on an iPad.
+export function vehiclePicture(id,color) {
+  const tire=(x,y=98)=>`<circle cx="${x}" cy="${y}" r="15" fill="#354247"/><circle cx="${x}" cy="${y}" r="8" fill="#c6d0cc"/>`;
+  const cab=`<path d="M28 89V58l15-23h41v54Z" fill="${color}"/><path d="m37 59 12-17h26v22H37Z" fill="#547681"/><path d="M35 73h16" stroke="#e8dcaa" stroke-width="6"/><rect x="25" y="88" width="210" height="10" rx="3" fill="#61716b"/>`;
+  let picture='';
+  if(id==='accent')picture=`<path d="m24 85 13-15 42-3 28-30h56l36 29 34 11v21H24Z" fill="#fafbf7" stroke="#a9b6ae"/><path d="m88 65 25-22h22v22Zm54 0V43h17l27 22Z" fill="#557580"/>${tire(64)}${tire(194)}`;
+  if(id==='truck')picture=`${cab}<path d="M94 45h143v44H94Z" fill="#debc74"/><path d="M106 48v36m23-36v36m23-36v36m23-36v36m23-36v36m23-36v36" stroke="#f4e1aa" stroke-width="4"/>${tire(55)}${tire(196)}`;
+  if(id==='ambulance')picture=`${cab}<rect x="86" y="30" width="148" height="61" rx="7" fill="#f6f7f1" stroke="#b2bdb5"/><path d="M91 72h139" stroke="#d77c57" stroke-width="9"/><path d="M110 41h101v20H110Z" fill="#93b2bd"/><path d="M171 44v32m-16-16h32" stroke="#f9fbf6" stroke-width="9"/><rect x="50" y="24" width="31" height="8" rx="4" fill="#64a8ca"/>${tire(55)}${tire(198)}`;
+  if(id==='crane')picture=`${cab}<rect x="117" y="69" width="99" height="22" rx="4" fill="${color}"/><path d="m188 72-71-38-31-13" stroke="#e3b94b" stroke-width="16"/><path d="m123 35-46-23" stroke="#a8b8ba" stroke-width="8"/><path d="M76 12v42q-12 10-1 14" fill="none" stroke="#435c5c" stroke-width="3"/>${tire(55)}${tire(168)}${tire(209)}`;
+  if(id==='excavator')picture=`<rect x="119" y="84" width="119" height="27" rx="13" fill="#354247"/><path d="M135 97h87" stroke="#94a6a3" stroke-width="13"/><path d="M129 83V49h85l21 16v18Z" fill="${color}"/><path d="M130 48V19h43v29Z" fill="#557b86" stroke="#e4b453" stroke-width="6"/><path d="m132 54-48-39-35 45" fill="none" stroke="#e4b453" stroke-width="12"/><path d="M51 58 37 86H12l10 18h38l8-20Z" fill="#536768"/>`;
+  if(id==='mixer')picture=`${cab}<path d="m99 49 22-24 58 2 37 26-25 27-65-2Z" fill="#f3f5ee" stroke="#b4c5b7"/><path d="m134 27-9 49m32-48-9 50m31-46-11 46" stroke="${color}" stroke-width="12"/><path d="m217 76 24 12" stroke="#8fa4a0" stroke-width="9"/>${tire(55)}${tire(164)}${tire(205)}`;
+  if(id==='container')picture=`${cab}<rect x="94" y="23" width="147" height="65" rx="3" fill="#6b9eaf"/><path d="M104 29v53m13-53v53m13-53v53m13-53v53m13-53v53m13-53v53m13-53v53m13-53v53m13-53v53m13-53v53" stroke="#9dc1c7" stroke-width="3"/>${tire(55)}${tire(111)}${tire(195)}${tire(228)}`;
+  return `<svg class="vehicle-picture" viewBox="0 0 270 130" aria-hidden="true"><ellipse cx="133" cy="112" rx="119" ry="7" fill="#dce0d3"/>${picture}</svg>`;
+}

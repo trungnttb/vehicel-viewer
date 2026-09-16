@@ -18,3 +18,11 @@
 - Giữ zoom tự động tách theo yêu cầu ban đầu, thêm nút tách–ráp và góc nhìn để dùng một lần chạm. Không tự xoay xe khi chờ bé chọn.
 - Giảm chiều cao cabin, chỉnh grille/đèn và giữ bánh tròn; gộp mesh theo nhóm chuyển động để giảm chi phí render.
 - Đánh giá lại âm thanh và kích thước hình sau khi quan sát bé dùng trên iPad thật. Chưa thêm trò chơi, tài khoản hoặc PWA/offline.
+
+## 2026-09-16 — Bộ sưu tập bảy xe
+
+- Thêm xe tải, cứu thương, cần cẩu, máy xúc bánh xích, xe trộn bê tông và xe container theo yêu cầu. Đây là mô hình đồ chơi generic, không mô phỏng thương hiệu cụ thể.
+- Danh mục chung quản lý factory, route, nhãn và bộ phận; tiến độ riêng từng xe. Dùng chung một renderer, giải phóng model cũ khi chuyển xe.
+- Mỗi bộ phận có hình và audio; có 45 file âm thanh dùng chung theo ID có cùng ý nghĩa. Camera tự căn theo bounds để cần cẩu dài và trạng thái tách không bị cắt khỏi khung.
+- Bổ sung vô lăng cho các xe đường bộ. Máy xúc bánh xích dùng hai cần điều khiển; tham khảo [Caterpillar về điều khiển joystick](https://www.cat.com/en_US/articles/for-owners/excavator-joystick-controls.html/).
+- Theo phản hồi thực tế, kéo dài cần cẩu và đưa đường cáp/móc ra phía trước cabin. Regression kiểm tra khoảng hở ở 0%, 25%, 50%, 75% và 100% độ tách.

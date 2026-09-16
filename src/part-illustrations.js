@@ -1,5 +1,30 @@
 // Simple recognizable pictures, not numbers or colors as the only way to choose.
 const pictures = {
+  joysticks:'<path d="M9 45h25v13H9zm35 0h25v13H44z" fill="#66827d"/><path d="m22 44-5-18m40 18 5-18" stroke="#a3b8bb" stroke-width="5"/><rect x="11" y="11" width="12" height="20" rx="5" fill="#3f575d"/><rect x="56" y="11" width="12" height="20" rx="5" fill="#3f575d"/><path d="M14 14h6m39 0h6" stroke="#cf8266"/>',
+  cabin:'<path fill="#a6c6d1" d="M16 54V25l14-15h32v44Z"/><path fill="#4f7988" d="m23 29 11-13h21v17H23Z"/><path d="M22 44h12m17-5h6"/>',
+  'cargo-bed':'<path fill="#debd78" d="M9 23h60v29H9z"/><path d="M17 26v23m11-23v23m11-23v23m11-23v23m11-23v23" stroke="#f5e0a2" stroke-width="3"/>',
+  cargo:'<path fill="#c8a67e" d="m12 20 27-10 27 10v33L39 62 12 53z"/><path d="m12 20 27 11 27-11M39 31v31"/><path d="m27 15 26 10v12" stroke="#f7e6b7" stroke-width="6"/>',
+  'medical-room':'<rect x="10" y="14" width="58" height="41" rx="5" fill="#f3f4ed"/><path fill="#9ebbc6" d="M15 20h48v14H15z"/><path d="M12 43h54" stroke="#cf805e" stroke-width="7"/><path d="M40 36v15m-7-8h14" stroke="#f6f7f0" stroke-width="4"/>',
+  'rear-doors':'<path fill="#f0f2e9" d="M12 12h54v46H12z"/><path d="M39 12v46"/><path fill="#91b3bd" d="M18 18h15v15H18zm27 0h15v15H45z"/><path d="M15 44h48" stroke="#d47c57" stroke-width="5"/>',
+  beacon:'<path fill="#495c62" d="M9 45h60v8H9z"/><path fill="#7bb8d3" d="M16 43V24q0-11 12-11t12 11v19Zm24 0V24q0-11 12-11t12 11v19Z"/><path d="m8 14-5-4m33-2V2m31 12 5-4" stroke="#d6bd5e" stroke-width="3"/>',
+  stretcher:'<path fill="#81b4c1" d="M9 25h61v14H9z"/><rect fill="#edf0e8" x="12" y="19" width="17" height="8" rx="3"/><path d="m18 40 10 14m31-14-10 14m-21-1h21"/><circle cx="26" cy="57" r="4" fill="#455e62"/><circle cx="52" cy="57" r="4" fill="#455e62"/>',
+  'first-aid':'<rect x="13" y="19" width="52" height="37" rx="6" fill="#cf836a"/><path d="M29 18v-8h20v8"/><path d="M39 27v20m-10-10h20" stroke="#fcf9ed" stroke-width="6"/>',
+  turntable:'<ellipse cx="39" cy="42" rx="27" ry="12" fill="#697b7b"/><ellipse cx="39" cy="34" rx="27" ry="12" fill="#d6bb76"/><path d="M17 15q23-14 45 1m-1-7 2 9-10-1"/>',
+  boom:'<path d="m15 54 21-26 29-16" stroke="#d9ae4f" stroke-width="14"/><circle cx="16" cy="53" r="7" fill="#526969"/><path d="m41 26 23-14" stroke="#d3dad0" stroke-width="6"/>',
+  hydraulics:'<path d="m18 54 22-29" stroke="#526969" stroke-width="14"/><path d="m36 30 23-19" stroke="#bacbd1" stroke-width="7"/><circle cx="16" cy="55" r="6" fill="#9bacb1"/><circle cx="62" cy="9" r="5" fill="#9bacb1"/>',
+  hook:'<path d="M39 4v19" stroke-width="3"/><rect x="29" y="22" width="20" height="15" rx="3" fill="#d9b356"/><path d="M39 37v8q-17 1-11 14t26-4" stroke="#637778" stroke-width="7"/>',
+  stabilizers:'<path d="M14 24h50M19 24v29m40-29v29" stroke="#b0bdbe" stroke-width="8"/><path d="M8 56h24m15 0h24" stroke="#4f6767" stroke-width="7"/><rect x="27" y="15" width="23" height="18" fill="#dbb655"/>',
+  tracks:'<rect x="7" y="18" width="64" height="35" rx="17" fill="#3d5053"/><path d="M25 35h30" stroke="#a9bab7" stroke-width="23"/><circle cx="24" cy="35" r="8" fill="#708885"/><circle cx="53" cy="35" r="8" fill="#708885"/><path d="M25 18v-4m13 4v-4m13 4v-4m-26 39v4m13-4v4m13-4v4"/>',
+  dipper:'<path d="m23 14 24 36" stroke="#deb24d" stroke-width="15"/><circle cx="23" cy="14" r="7" fill="#617674"/><circle cx="48" cy="51" r="6" fill="#617674"/>',
+  bucket:'<path fill="#6d8180" d="m17 17 32-3 13 30-10 13H17L8 43h23z"/><path d="m19 57-3 6m16-6-2 6m16-6v6" stroke-width="5"/>',
+  'drum-support':'<path d="M10 54h60M18 51V29m44 22V29" stroke="#576d6b" stroke-width="8"/><path d="M18 21q21 37 44 0" stroke="#b3c4bd" stroke-width="8"/>',
+  drum:'<path fill="#e8eee4" d="m9 26 16-14 28 2 17 20-17 21-30-2-14-15Z"/><path d="m31 15-6 34m21-32-5 35m18-30-6 30" stroke="#7fa799" stroke-width="8"/>',
+  hopper:'<path fill="#afc1c3" d="M8 15h62L45 46v13H32V46z"/><path d="M8 15 34 23h11l25-8"/>',
+  chute:'<path fill="#b7c8c8" d="m10 20 56 20-3 15L8 33Z"/><path d="m14 20 2 10 49 18"/>',
+  trailer:'<path d="M8 29h62v11H8z" fill="#758885"/><circle cx="49" cy="48" r="10" fill="#41585b"/><circle cx="66" cy="48" r="10" fill="#41585b"/><path d="M17 40v14h11"/>',
+  container:'<rect x="6" y="13" width="66" height="44" rx="2" fill="#7aa4b5"/><path d="M15 17v36m10-36v36m10-36v36m10-36v36m10-36v36m10-36v36" stroke="#b8d1d3" stroke-width="3"/>',
+  'container-doors':'<path fill="#7fa7b7" d="M11 9h56v52H11z"/><path d="M39 9v52m-18-45v39m9-39v39m17-39v39m10-39v39" stroke="#d0dbd6" stroke-width="3"/><path d="M24 42h9m12 0h9"/>',
+  coupling:'<ellipse cx="39" cy="37" rx="28" ry="20" fill="#7b9293"/><path d="M32 57V34q7-10 14 0v23" fill="#e8ecdf"/><path d="M39 6v17" stroke-width="6"/>',
   body:'<path fill="#f3f5ef" d="M7 32 13 25h10l8-12h19l12 14 8 5v17H7z"/><path fill="#92b0b5" d="m29 25 6-9h12l8 10z"/><circle fill="#465252" cx="21" cy="48" r="8"/><circle fill="#465252" cx="57" cy="48" r="8"/>',
   hood:'<path fill="#cad5d9" d="m10 37 9-18 36-5 13 24-15 12-31 1z"/><path stroke="#fff" stroke-width="4" d="m23 23-4 14m31-15 8 15"/><path d="m10 37 24 6 34-5"/>',
   roof:'<path fill="#c1b6d5" d="m9 37 14-20h32l15 20-8 12H18z"/><path fill="#eef1f2" d="m24 21-8 13h45l-9-13z"/><path d="M18 49v6m44-6v6"/>',
@@ -16,3 +41,4 @@ const pictures = {
 export function partIllustration(id) {
   return `<svg class="part-picture" viewBox="0 0 78 68" fill="none" stroke="#536b65" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${pictures[id] ?? pictures.body}</svg>`;
 }
+export const illustratedPartIds = Object.keys(pictures);

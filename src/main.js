@@ -2,7 +2,9 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createCar, partInfo } from './car.js';
+import { vehicles, vehicleById } from './vehicle-catalog.js';
+import { vehiclePicture } from './vehicle-pictures.js';
+import { fittingFov } from './camera-fit.js';
 import { createTapTracker } from './tap-tracker.js';
 import { partIllustration } from './part-illustrations.js';
 import { audioMessages } from './audio-messages.js';
@@ -26,7 +28,9 @@ const app = document.querySelector('#app');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const touchDevice = matchMedia('(any-pointer: coarse)');
 let detail = false, sound = true, selected = null, manualExplosion = null, explosion = 0;
-const visited = new Set();
+let vehicle = vehicles[0], partInfo = vehicle.parts;
+const discovery = new Map(vehicles.map(v=>[v.id,new Set()]));
+let visited = discovery.get(vehicle.id);
 let vietnameseVoice = null;
 const narration = new Audio();
 narration.preload = 'none';
@@ -69,7 +73,7 @@ try {
   const environment = new RoomEnvironment();
   scene.environment = pmrem.fromScene(environment,.04).texture;
   environment.dispose(); pmrem.dispose();
-  car = createCar(); scene.add(car.root);
+  car = vehicle.factory(); scene.add(car.root);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(200,200), new THREE.ShadowMaterial({color:'#56574d',opacity:.16}));
   floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; floor.position.y = .01; scene.add(floor);
 } catch (error) { webglError = true; console.error('Không thể khởi tạo 3D:', error); }
@@ -78,25 +82,58 @@ function header() {
   return `<header class="header"><a class="brand" href="#/" aria-label="Gara tí hon, trang chủ"><span class="brand-icon">${icon('car')}</span>gara tí hon<span class="brand-dot">®</span></a><nav><a href="#/" class="nav-link ${!detail?'active':''}">Bộ sưu tập</a><span class="header-note">Một chút tò mò. Cả thế giới mới.</span></nav><button class="sound-button" id="sound" aria-label="${sound?'Tắt':'Bật'} âm thanh" aria-pressed="${sound}">${icon(sound?'sound':'mute')}<span>Âm thanh ${sound?'bật':'tắt'}</span></button></header>`;
 }
 function stageMarkup() {
-  return `<div class="stage" id="stage"><div class="stage-grid"></div><div class="stage-top"><span class="live-dot"></span> MÔ HÌNH 3D TƯƠNG TÁC</div><div class="stage-label"><span>01 / THE LITTLE COLLECTION</span><strong>ACCENT <em>2021</em></strong></div><div class="canvas-host" id="canvas-host"></div>${detail?'<button class="stage-part" id="stage-part" hidden aria-label="Đọc lại tên bộ phận"><span></span>'+icon('sound')+'</button>':''}<div class="stage-bottom"><span>${icon('rotate')} Kéo để xoay ${detail?'· Chạm để nghe':''}</span><span class="color-label"><i></i> Polar white</span></div>${webglError?'<div class="webgl-error">Thiết bị chưa mở được mô hình 3D. Hãy bật tăng tốc đồ họa hoặc thử trình duyệt khác.</div>':''}</div>`;
+  return `<div class="stage" id="stage"><div class="stage-grid"></div><div class="stage-top"><span class="live-dot"></span> MÔ HÌNH 3D TƯƠNG TÁC</div><div class="stage-label"><span>${String(vehicles.indexOf(vehicle)+1).padStart(2,'0')} / THE LITTLE COLLECTION</span><strong>${vehicle.label} <em>${vehicle.id==='accent'?'2021':''}</em></strong></div><div class="canvas-host" id="canvas-host"></div>${detail?'<button class="stage-part" id="stage-part" hidden aria-label="Đọc lại tên bộ phận"><span></span>'+icon('sound')+'</button>':''}<div class="stage-bottom"><span>${icon('rotate')} Kéo để xoay ${detail?'· Chạm để nghe':''}</span><span class="color-label"><i style="background:${vehicle.color}"></i> ${vehicle.colorName}</span></div>${webglError?'<div class="webgl-error">Thiết bị chưa mở được mô hình 3D. Hãy bật tăng tốc đồ họa hoặc thử trình duyệt khác.</div>':''}</div>`;
 }
 function home() {
-  app.innerHTML = `${header()}<main class="home"><section class="hero"><div class="hero-copy"><div class="eyebrow"><span></span> GARA NHỎ, KHÁM PHÁ TO</div><h1>Chạm vào xe.<br>Mở ra <span>tò mò.</span><span class="title-spark">✳</span></h1><p>Xoay một vòng. Khám phá từng bộ phận.<br>Cùng bé hiểu những người bạn trên mọi nẻo đường.</p><a class="primary-button" href="#/xe/accent">Khám phá ô tô ${icon('arrow')}</a><div class="hero-foot"><span class="tiny-orbits">✦</span><span>Dành cho những nhà khám phá nhí</span></div></div>${stageMarkup()}</section><section class="collection"><div class="section-heading"><div><span class="eyebrow">CHỌN BẠN ĐỒNG HÀNH</span><h2>Hôm nay, mình khám phá gì?</h2></div><span class="collection-count">01 phương tiện · Vô vàn tò mò</span></div><div class="collection-grid"><a class="vehicle-card available" href="#/xe/accent"><div class="card-top"><span class="card-tag">SẴN SÀNG KHÁM PHÁ</span><span>01</span></div><div class="mini-car"><div class="mini-roof"></div><div class="mini-body"></div><i></i><i></i></div><div class="card-bottom"><div><h3>Ô tô con</h3><p>Accent 2021 · Trắng ngọc</p></div><span class="round-arrow">${icon('arrow')}</span></div></a><div class="invitation-card"><span class="outline-star">✳</span><div><span class="eyebrow">BẮT ĐẦU BẰNG MỘT CHIẾC XE</span><h3>Có gì bên trong<br>người bạn bốn bánh?</h3><p>12 bộ phận đang chờ bé khám phá.<br>Chạm thử, rồi lắng nghe nhé!</p></div><span class="doodle-line">↗</span></div></div></section><section class="how-it-works"><div><span>01</span>${icon('rotate')}<p><strong>Xoay & ngắm</strong>Kéo ngón tay để nhìn mọi phía.</p></div><div><span>02</span>${icon('expand')}<p><strong>Tách & khám phá</strong>Phóng to để nhìn vào bên trong.</p></div><div><span>03</span>${icon('sound')}<p><strong>Chạm & lắng nghe</strong>Mỗi bộ phận đều có một cái tên.</p></div></section></main><footer><span>gara tí hon</span><p>Một thế giới nhỏ cho trí tò mò lớn.</p><span>Được làm để cùng bé khám phá ↗</span></footer>`;
+  const cards=vehicles.map((v,i)=>`<a class="vehicle-card available" href="#/xe/${v.id}"><div class="card-top"><span class="card-tag">${v.parts.length} BỘ PHẬN ĐỂ KHÁM PHÁ</span><span>${String(i+1).padStart(2,'0')}</span></div>${vehiclePicture(v.id,v.color)}<div class="card-bottom"><div><h3>${v.name}</h3><p>${v.colorName}</p></div><span class="round-arrow">${icon('arrow')}</span></div></a>`).join('');
+  app.innerHTML=`${header()}
+    <main class="home">
+      <section class="hero"><div class="hero-copy"><div class="eyebrow"><span></span> GARA NHỎ, KHÁM PHÁ TO</div>
+        <h1>Chạm vào xe.<br>Mở ra <span>tò mò.</span><span class="title-spark">✳</span></h1>
+        <p>Xoay một vòng. Khám phá từng bộ phận.<br>Cùng bé hiểu những người bạn trên mọi nẻo đường.</p>
+        <a class="primary-button" href="#/xe/accent">Khám phá ô tô ${icon('arrow')}</a>
+        <div class="hero-foot"><span class="tiny-orbits">✦</span><span>Dành cho những nhà khám phá nhí</span></div></div>${stageMarkup()}</section>
+      <section class="collection"><div class="section-heading"><div><span class="eyebrow">CHỌN BẠN ĐỒNG HÀNH</span><h2>Hôm nay, mình khám phá gì?</h2></div><span class="collection-count">${vehicles.length} phương tiện · Vô vàn tò mò</span></div><div class="collection-grid">${cards}</div></section>
+      <section class="how-it-works"><div><span>01</span>${icon('rotate')}<p><strong>Xoay & ngắm</strong>Kéo ngón tay để nhìn mọi phía.</p></div><div><span>02</span>${icon('expand')}<p><strong>Tách & khám phá</strong>Phóng to để nhìn vào bên trong.</p></div><div><span>03</span>${icon('sound')}<p><strong>Chạm & lắng nghe</strong>Mỗi bộ phận đều có một cái tên.</p></div></section>
+    </main><footer><span>gara tí hon</span><p>Một thế giới nhỏ cho trí tò mò lớn.</p><span>Được làm để cùng bé khám phá ↗</span></footer>`;
 }
 function detailPage() {
-  app.innerHTML = `${header()}<main class="detail"><div class="breadcrumbs"><a href="#/">${icon('back')} Bộ sưu tập</a><span>/</span><span>Ô tô con</span></div><div class="detail-heading"><div><div class="eyebrow">NGƯỜI BẠN BỐN BÁNH</div><h1>Ô tô con <span>Accent 2021</span></h1></div><span class="detail-badge"><i></i> Trắng ngọc · Mô hình đồ chơi</span></div><div class="explorer"><div class="viewer-column">${stageMarkup()}<div class="viewer-toolbar"><button id="explode" class="explode-button">${icon('expand')}<span>Tách bộ phận</span></button><div class="zoom-controls"><button id="zoom-out" aria-label="Thu nhỏ">${icon('minus')}</button><span>ZOOM</span><button id="zoom-in" aria-label="Phóng to">${icon('plus')}</button></div><button id="reset" class="reset-button" aria-label="Đặt lại góc nhìn">${icon('reset')}<span>Đặt lại</span></button></div><div class="explosion-slider"><label for="separation">Ráp lại</label><input type="range" id="separation" min="0" max="100" value="0" aria-label="Độ tách bộ phận"><span>Tách ra</span></div><p class="viewer-caption">Mô hình cách điệu lấy cảm hứng từ Hyundai Accent 2021.</p></div><aside class="parts-panel"><div class="panel-heading"><span class="eyebrow">CÙNG TÌM HIỂU NÀO</span><h2>Chiếc xe có những gì?</h2><p>Chạm vào xe hoặc chọn một bộ phận.</p></div><div class="selected-part" id="selected-part" aria-live="polite"><span class="selected-symbol">${icon('spark')}</span><div><h3>Bé muốn khám phá gì?</h3><p>Thử chạm vào một bánh xe nhé!</p></div></div><div class="parts-list">${partInfo.map((part,i)=>`<button class="part-button" data-part="${part.id}" aria-pressed="false"><span class="part-number" style="--part-color:${part.color}">${String(i+1).padStart(2,'0')}</span><span>${part.name}</span><span class="part-status">${icon('sound')}</span></button>`).join('')}</div><div class="progress-area"><div><span>Hành trình khám phá</span><strong id="progress-count">${visited.size} / 12</strong></div><div class="progress-track"><span id="progress-bar" style="width:${visited.size/12*100}%"></span></div><p id="progress-message">Mỗi lần chạm là một điều mới!</p></div></aside></div></main><div id="toast" class="toast" role="status"></div>`;
+  app.innerHTML=`${header()}<main class="detail">
+    <div class="breadcrumbs"><a href="#/">${icon('back')} Bộ sưu tập</a><span>/</span><span>${vehicle.name}</span></div>
+    <div class="detail-heading"><div><div class="eyebrow">CÙNG KHÁM PHÁ THẾ GIỚI XE</div><h1>${vehicle.name} <span>${vehicle.subtitle}</span></h1></div><span class="detail-badge"><i style="background:${vehicle.color}"></i> ${vehicle.colorName}</span></div>
+    <div class="explorer"><div class="viewer-column">${stageMarkup()}
+      <div class="viewer-toolbar"><button id="explode" class="explode-button">${icon('expand')}<span>Tách bộ phận</span></button><div class="zoom-controls"><button id="zoom-out" aria-label="Thu nhỏ">${icon('minus')}</button><span>ZOOM</span><button id="zoom-in" aria-label="Phóng to">${icon('plus')}</button></div><button id="reset" class="reset-button" aria-label="Đặt lại góc nhìn">${icon('reset')}<span>Đặt lại</span></button></div>
+      <div class="explosion-slider"><label for="separation">Ráp lại</label><input type="range" id="separation" min="0" max="100" value="0" aria-label="Độ tách bộ phận"><span>Tách ra</span></div><p class="viewer-caption">${vehicle.caption}</p>
+    </div><aside class="parts-panel"><div class="panel-heading"><span class="eyebrow">CÙNG TÌM HIỂU NÀO</span><h2>Chiếc xe có những gì?</h2><p>Chạm vào xe hoặc chọn một hình.</p></div>
+      <div class="selected-part" id="selected-part" aria-live="polite"></div>
+      <div class="parts-list">${partInfo.map(part=>`<button class="part-button" data-part="${part.id}" aria-pressed="false">${partIllustration(part.id)}<span>${part.name}</span><span class="part-status">${icon('sound')}</span></button>`).join('')}</div>
+      <div class="progress-area"><div><span>Hành trình khám phá</span><strong id="progress-count">${visited.size} / ${partInfo.length}</strong></div><div class="progress-track"><span id="progress-bar" style="width:${visited.size/partInfo.length*100}%"></span></div><p id="progress-message">Mỗi lần chạm là một điều mới!</p></div>
+    </aside></div></main><div id="toast" class="toast" role="status"></div>`;
 }
 function resetView() {
   if (!controls) return;
   controls.enableDamping = false; controls.update();
-  camera.position.set(-6.5,3.6,7.5); controls.target.set(0,.9,0);
+  const center = car.bounds.getCenter(new THREE.Vector3());
+  controls.target.set(center.x,center.y+.2,center.z);
+  camera.position.copy(controls.target).add(new THREE.Vector3(-6.5,2.7,7.5));
   controls.update(); controls.autoRotate = false;
   controls.enableDamping = true;
   manualExplosion = null; selected = null; car.select(null);
 }
 function mount() {
-  detail = location.hash.startsWith('#/xe/');
+  const requested = vehicleById(location.hash.match(/^#\/xe\/([a-z-]+)$/)?.[1]);
+  detail = Boolean(requested);
+  const nextVehicle = requested ?? vehicles[0];
   stopSpeech();
+  if (vehicle.id !== nextVehicle.id && !webglError) {
+    const nextCar=nextVehicle.factory();
+    scene.remove(car.root);
+    car.root.traverse(m=>{if(m.isMesh){m.geometry.dispose();m.material.dispose();}});
+    car=nextCar; scene.add(car.root);
+  }
+  vehicle=nextVehicle;partInfo=vehicle.parts;visited=discovery.get(vehicle.id);
+  canvas.setAttribute('aria-label',`Mô hình ${vehicle.name} 3D. Kéo để xoay, phóng to để tách bộ phận. Có thể chọn hình bộ phận bên cạnh.`);
+  document.title=`${detail?vehicle.name:'Khám phá phương tiện'} — Gara tí hon`;
   selected = null; explosion = 0; manualExplosion = null;
   taps.clear();
   detail ? detailPage() : home();
@@ -110,9 +147,6 @@ function mount() {
   if (detail) {
     document.querySelector('.stage-top').outerHTML = `<button class="guide-button" id="guide" aria-label="Nghe hướng dẫn cách chơi">${icon('sound')}<span>Nghe cách chơi</span></button>`;
     document.querySelector('#guide').addEventListener('click', () => { if(!sound) document.querySelector('#sound').click(); speakMessage('guide'); });
-    for (const button of document.querySelectorAll('[data-part]')) {
-      button.querySelector('.part-number').outerHTML = partIllustration(button.dataset.part);
-    }
     const toolbar = document.querySelector('.viewer-toolbar');
     const viewPictures = {
       front: '<rect x="5" y="5" width="18" height="20" rx="5" fill="#edf0e9"/><path d="m8 12 1-4h10l1 4z" fill="#829da4"/><path d="M9 19h10m-11-4h3m6 0h3"/>',
@@ -181,7 +215,7 @@ function speakWithDevice(text) {
 function choosePart(id) {
   const part=partInfo.find(p=>p.id===id); if(!part) return;
   selected=id; visited.add(id); car?.select(id);
-  if (['engine','seats','steering','axles'].includes(id) && explosion<.7) manualExplosion=1;
+  if (['engine','seats','steering','joysticks','axles','stretcher','first-aid','coupling'].includes(id) && explosion<.7) manualExplosion=1;
   updateSelection(); speak(part);
 }
 function updateSelection() {
@@ -193,7 +227,7 @@ function updateSelection() {
     stagePart.querySelector('span').textContent=part.name;
     stagePart.setAttribute('aria-label',`Đọc lại tên ${part.name} trên mô hình`);
   }
-  card.innerHTML=part ? `<span class="selected-symbol" style="background:${part.color}30">${icon('car')}</span><div><span class="english-name">${part.english}</span><h3>${part.name}</h3><p>${part.description}</p></div><button id="replay" aria-label="Đọc lại tên ${part.name}">${icon('sound')}</button>` : `<span class="selected-symbol">${icon('spark')}</span><div><h3>Bé muốn khám phá gì?</h3><p>Thử chạm vào một bánh xe nhé!</p></div>`;
+  card.innerHTML=part ? `<span class="selected-symbol" style="background:${part.color}30">${icon('car')}</span><div><span class="english-name">${part.english}</span><h3>${part.name}</h3><p>${part.description}</p></div><button id="replay" aria-label="Đọc lại tên ${part.name}">${icon('sound')}</button>` : `<span class="selected-symbol">${icon('spark')}</span><div><h3>Bé muốn khám phá gì?</h3><p>Thử chạm vào một hình bên dưới nhé!</p></div>`;
   if(part) card.querySelector('.selected-symbol').innerHTML=partIllustration(part.id);
   document.querySelector('#replay')?.addEventListener('click',()=>speak(part));
   for(const button of document.querySelectorAll('[data-part]')) {
@@ -201,9 +235,9 @@ function updateSelection() {
     button.setAttribute('aria-pressed',String(button.dataset.part===selected));
     button.querySelector('.part-status').innerHTML=icon(visited.has(button.dataset.part)?'check':'sound');
   }
-  document.querySelector('#progress-count').textContent=`${visited.size} / 12`;
-  document.querySelector('#progress-bar').style.width=`${visited.size/12*100}%`;
-  document.querySelector('#progress-message').textContent=visited.size===12?'Giỏi quá! Bé đã khám phá cả chiếc xe!':'Mỗi lần chạm là một điều mới!';
+  document.querySelector('#progress-count').textContent=`${visited.size} / ${partInfo.length}`;
+  document.querySelector('#progress-bar').style.width=`${visited.size/partInfo.length*100}%`;
+  document.querySelector('#progress-message').textContent=visited.size===partInfo.length?'Giỏi quá! Bé đã khám phá cả chiếc xe!':'Mỗi lần chạm là một điều mới!';
 }
 const raycaster=new THREE.Raycaster(); const pointer=new THREE.Vector2();
 const taps=createTapTracker();
@@ -233,6 +267,7 @@ window.addEventListener('resize',resize); window.addEventListener('hashchange',m
 mount();
 if (renderer) {
   let previous=performance.now();
+  const viewBounds=new THREE.Box3();
   renderer.setAnimationLoop(now=>{
     if (document.hidden || (touchDevice.matches && now-previous < 1000/30)) return;
     const dt=Math.min((now-previous)/1000,.05);previous=now;
@@ -240,8 +275,9 @@ if (renderer) {
     const target=detail?(manualExplosion ?? (1-THREE.MathUtils.smoothstep(controls.getDistance(),7.0,9.3))):0;
     explosion=reducedMotion.matches?target:THREE.MathUtils.damp(explosion,target,5,dt);
     car.explode(explosion);
-    if (Math.abs(camera.fov-(fittedFov+explosion*10))>.01) {
-      camera.fov=fittedFov+explosion*10; camera.updateProjectionMatrix();
+    const desiredFov=fittingFov(viewBounds.setFromObject(car.root),camera,fittedFov+explosion*10);
+    if (Math.abs(camera.fov-desiredFov)>.01) {
+      camera.fov=desiredFov; camera.updateProjectionMatrix();
     }
     if(detail) {
       const slider=document.querySelector('#separation'); if(document.activeElement!==slider) slider.value=Math.round(explosion*100);

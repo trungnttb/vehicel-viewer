@@ -25,11 +25,13 @@ Deliver a recognizable toy vehicle with independently selectable educational par
 
 ## Integrate only the requested scope
 - For a refinement, preserve routes, part IDs and existing actions unless the shape requires a change.
-- For a second vehicle, make the catalog, exact route lookup, title, preview, canvas label, metadata, total part count and progress vehicle-aware. Current `main.js` is still Accent-specific; do not assume that adding a factory automatically registers a vehicle.
+- Register vehicles in `src/vehicle-catalog.js`: factory, exact route ID, names, color and part list. The shared viewer uses that data for title, canvas label, part count and progress. Add a catalog picture in `src/vehicle-pictures.js`; a factory alone does not register a vehicle.
+- Use `src/vehicle-kit.js` for suitable primitives and truck-cabin details; preserve the new vehicle's own silhouette. It already includes steering, seats, hollow cabin, lights and mirrors. `src/work-vehicles.js` contains the six working-vehicle examples.
 - Keep discovery progress separate per vehicle; switching vehicles cancels speech and clears stale selection.
 - Detach and dispose unused model resources, or use a deliberate cache. Do not accumulate render loops/listeners when navigating.
 - Keep Vietnamese voice fallback and part-list selection available even when a tiny mesh is hard to tap.
 - The child may not read: add recognizable pictures in `src/part-illustrations.js` for new parts and matching `/audio/vi/{id}.m4a` narration. Existing narration plays bundled files before device speech. Never silently reuse a shared ID with a different spoken meaning.
+- Include driving controls: steering wheels for road vehicles, appropriate joysticks for tracked excavators. For cranes and articulated tools, inspect actual working geometry and require clearance from cabin/body through assembly and separation; longer reach is useful only when cables, hooks and pivots move coherently.
 - `scripts/generate-audio.mjs` generates current narration with a local macOS voice; it is optional for runtime. Extend its source data or use reviewed audio assets for new vehicles. Do not promise generated audio before files exist and play.
 
 ## Performance and verification
@@ -38,6 +40,7 @@ Deliver a recognizable toy vehicle with independently selectable educational par
 - Run model checks and build. Inspect front, side, rear, three-quarter, assembled, half-separated and fully separated views; check all parts stay in frame at minimum zoom and narrow layouts.
 - Try the model directly, not just its part buttons: selection, drag without selection, zoom, separation, reset and home→detail navigation.
 - Run `npm test`; include repeated explode/reset cycles to catch transform drift and verify every illustrated part has matching playable audio. For tablet UI changes, also apply `skills/ipad-vehicle-ux/SKILL.md`.
+- Keep `src/camera-fit.js` framing active for tall/long vehicles. Extend meaningful geometry tests for collision/clearance risks; do not rely only on screenshots or a hand-chosen default camera.
 - Report changes, sources used, checks performed and fidelity/device limits. Do not call it finished based solely on a successful build.
 
 ## Examples of scope
