@@ -18,9 +18,9 @@ Bé 6 tuổi, có thể chưa đọc chữ, cầm iPad ngang. User thích UI/UX 
 
 - Ngang: xe bên trái, bảng hình bên phải. Tên/replay nằm trên mô hình; bỏ thẻ mô tả lặp ở cột phải để ưu tiên ô hình. Ở viewport thấp hoặc xe có nhiều bộ phận, bảng hình cuộn riêng; điều khiển xe ở ngoài vùng cuộn đó.
 - Dọc iPad: khung xe phía trên, bảng hình phía dưới; khung xe giữ vị trí khi cuộn để bé thấy phản hồi.
-- Bảy phương tiện, mỗi xe có danh sách hình riêng. Accent giữ 12 bộ phận; các xe mới thêm những phần như thùng hàng, cáng, cần nâng, móc cẩu, bánh xích, gầu xúc, bồn trộn và container.
+- Mười tám phương tiện, mỗi xe có danh sách hình riêng. Accent giữ 12 bộ phận; các xe mới thêm những phần như thùng hàng, cáng, cần nâng, móc cẩu, bánh xích, gầu xúc, bồn trộn, container, thang cứu hỏa, vòi chữa cháy, thùng rác, tay nâng thùng, trống lu, thùng ben, bồn chở xăng, sàn chở xe, càng nâng, lưỡi cày, tay vịn và tay lái xe máy.
 - Chạm nút loa để nghe cách chơi. Chạm một hình hoặc một bộ phận để nghe tên và làm sáng bộ phận đó.
-- 45 file âm thanh tiếng Việt: 37 tên bộ phận dùng chung, hướng dẫn và 7 hành động/góc nhìn. File được tổng hợp bằng giọng Linh trên macOS, không phải thu âm người thật.
+- 72 file âm thanh tiếng Việt: 64 tên bộ phận dùng chung, hướng dẫn và 7 hành động/góc nhìn. File được tổng hợp bằng giọng Linh trên macOS, không phải thu âm người thật.
 - Phát một âm thanh tại một thời điểm; đổi bộ phận, tắt âm thanh hoặc rời trang sẽ ngắt âm cũ. Nếu file lỗi, thử giọng thiết bị; nếu cả hai lỗi, hiện thông báo để phụ huynh hỗ trợ.
 - Kéo ra xa rồi trở lại, pinch thả từng ngón và pointer cancel không được coi là tap.
 - Không tự xoay xe trong lúc bé quan sát. Reduced-motion áp dụng cả cho chuyển động tách.

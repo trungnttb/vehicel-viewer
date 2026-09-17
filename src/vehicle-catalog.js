@@ -1,5 +1,5 @@
 import { createCar, partInfo as accentParts } from './car.js';
-import { createTruck, createAmbulance, createCrane, createExcavator, createMixer, createContainer } from './work-vehicles.js';
+import { createTruck, createAmbulance, createCrane, createExcavator, createMixer, createContainer, createFireTruck, createGarbageTruck, createRoadRoller, createDumpTruck, createTanker, createTowTruck, createWheelLoader, createForklift, createTractor, createBus, createMotorbike } from './work-vehicles.js';
 
 const definitions={
   body:['Thân xe','Phần khung chắc chắn nâng đỡ chiếc xe.'],
@@ -20,10 +20,10 @@ const definitions={
   stretcher:['Cáng cứu thương','Chiếc cáng giúp đưa người bệnh lên xe.'],
   'first-aid':['Túi sơ cứu','Túi đựng dụng cụ sơ cứu.'],
   turntable:['Mâm xoay','Mâm xoay giúp phần phía trên quay sang các hướng.'],
-  boom:['Cần nâng','Cần nâng vươn lên để làm việc trên cao.'],
-  hydraulics:['Xi-lanh thủy lực','Xi-lanh đẩy và kéo để di chuyển cần.'],
+  boom:['Cần nâng','Cần nâng vươn ra để nâng và đưa đồ vật đến chỗ cần.'],
+  hydraulics:['Xi-lanh thủy lực','Xi-lanh đẩy và kéo để nâng hạ các bộ phận.'],
   hook:['Móc cẩu','Móc cẩu dùng để nâng vật nặng.'],
-  stabilizers:['Chân chống','Chân chống giúp xe đứng vững khi nâng đồ.'],
+  stabilizers:['Chân chống','Chân chống giúp xe đứng vững, không bị đổ.'],
   tracks:['Bánh xích','Dải xích giúp máy di chuyển trên đất mềm.'],
   dipper:['Tay gầu','Tay gầu đưa gầu xúc đến chỗ cần đào.'],
   bucket:['Gầu xúc','Gầu xúc múc đất và cát.'],
@@ -35,6 +35,34 @@ const definitions={
   container:['Thùng container','Thùng lớn bảo vệ hàng hóa trên đường đi.'],
   'container-doors':['Cửa container','Mở hai cánh cửa để đưa hàng vào thùng.'],
   coupling:['Mâm kéo','Mâm kéo nối đầu xe với rơ-moóc.'],
+  'water-tank':['Bồn nước','Bồn chở nước để dập tắt đám cháy.'],
+  lockers:['Tủ dụng cụ','Các ngăn tủ cất dụng cụ chữa cháy.'],
+  ladder:['Thang cứu hỏa','Thang vươn lên cao để cứu người và chữa cháy.'],
+  'garbage-body':['Thùng chứa rác','Thùng kín chứa rác thu gom trên đường.'],
+  tailgate:['Cửa ép rác','Cửa sau ép rác cho gọn để chở được nhiều hơn.'],
+  'bin-lift':['Tay nâng thùng','Tay nâng nhấc thùng rác lên và đổ vào xe.'],
+  'trash-bin':['Thùng rác','Thùng rác đặt bên đường, chờ xe đến lấy.'],
+  'roller-drum':['Trống lu','Trống thép nặng lăn qua để nén phẳng mặt đường.'],
+  exhaust:['Ống xả','Khói của động cơ đi ra ngoài qua ống xả.'],
+  'dump-bed':['Thùng ben','Thùng ben nâng lên để đổ cát đá xuống.'],
+  sand:['Cát','Đống cát đang được chở đến công trường.'],
+  'fuel-tank':['Bồn chở xăng','Bồn kín chở xăng dầu đến cây xăng.'],
+  valves:['Van xả','Mở van để xăng dầu chảy ra.'],
+  flatbed:['Sàn chở xe','Sàn phẳng để chở chiếc xe bị hỏng.'],
+  winch:['Tời kéo','Tời cuốn dây cáp để kéo xe hỏng lên sàn.'],
+  'towed-car':['Xe bị hỏng','Chiếc xe bị hỏng đang được chở đi sửa.'],
+  mast:['Khung nâng','Khung nâng đưa càng lên cao và hạ xuống.'],
+  forks:['Càng nâng','Hai càng luồn dưới tấm kê để nhấc hàng lên.'],
+  pallet:['Tấm kê hàng','Tấm kê để đặt hàng lên cho dễ nhấc.'],
+  counterweight:['Đối trọng','Khối nặng phía sau giữ cho xe không bị lật.'],
+  plough:['Lưỡi cày','Lưỡi cày xới đất để chuẩn bị gieo trồng.'],
+  roof:['Nóc xe','Nóc xe che nắng, che mưa cho mọi người.'],
+  windows:['Cửa sổ','Cửa sổ giúp hành khách nhìn ra ngoài.'],
+  'route-sign':['Bảng số tuyến','Bảng cho biết xe buýt chạy tuyến nào.'],
+  handrails:['Tay vịn','Hành khách đứng vịn tay cho khỏi ngã.'],
+  handlebars:['Tay lái','Người lái cầm tay lái để rẽ trái, rẽ phải.'],
+  saddle:['Yên xe','Chỗ ngồi của người lái và người ngồi sau.'],
+  hose:['Vòi chữa cháy','Vòi dài cuộn tròn, kéo ra để phun nước vào đám cháy.'],
 };
 const colors=['#d5a573','#9caeca','#79b3ac','#e5a75e','#c794a5','#a4b978'];
 const parts=ids=>ids.map((id,i)=>({id,name:definitions[id][0],description:definitions[id][1],english:'',color:colors[i%colors.length]}));
@@ -48,6 +76,17 @@ export const vehicles=[
   entry('excavator','Máy xúc','DIG','#e7a842','Vàng cam',createExcavator,['body','tracks','cabin','doors','seats','joysticks','engine','turntable','boom','dipper','bucket','hydraulics','lights']),
   entry('mixer','Xe trộn bê tông','MIX','#689b8f','Xanh bạc hà',createMixer,[...base,'drum-support','drum','hopper','chute']),
   entry('container','Xe container','HAUL','#ca7958','Cam đất · Xanh',createContainer,[...base,'trailer','container','container-doors','coupling']),
+  entry('fire-truck','Xe cứu hỏa','FIRE','#d25a47','Đỏ · Trắng',createFireTruck,[...base,'water-tank','lockers','turntable','ladder','hose','beacon']),
+  entry('garbage-truck','Xe chở rác','CLEAN','#78a45f','Xanh lá · Trắng',createGarbageTruck,[...base,'garbage-body','tailgate','bin-lift','trash-bin','beacon']),
+  entry('road-roller','Xe lu','ROLL','#e0874f','Cam · Xám',createRoadRoller,['body','roller-drum','wheels','engine','exhaust','cabin','seats','steering','lights']),
+  entry('dump-truck','Xe ben','DUMP','#d9774a','Cam · Xám',createDumpTruck,[...base,'dump-bed','sand','hydraulics']),
+  entry('tanker','Xe bồn chở xăng','FUEL','#8d7bb0','Tím · Bạc',createTanker,[...base,'fuel-tank','valves']),
+  entry('tow-truck','Xe cứu hộ','TOW','#3f6f8f','Xanh thép · Vàng',createTowTruck,[...base,'flatbed','winch','towed-car','beacon']),
+  entry('wheel-loader','Xe xúc lật','LOAD','#e2c14f','Vàng chanh',createWheelLoader,['body','wheels','engine','exhaust','cabin','doors','seats','steering','boom','hydraulics','bucket','lights']),
+  entry('forklift','Xe nâng hàng','FORK','#e5a23a','Vàng cam',createForklift,['body','wheels','counterweight','engine','seats','steering','cabin','mast','forks','pallet','cargo','lights']),
+  entry('tractor','Máy kéo','FARM','#4f86b8','Xanh dương',createTractor,['body','wheels','engine','exhaust','cabin','seats','steering','plough','lights']),
+  entry('bus','Xe buýt','BUS','#f0c24f','Vàng · Trắng',createBus,['body','roof','windows','doors','wheels','seats','steering','handrails','route-sign','mirrors','lights','engine']),
+  entry('motorbike','Xe máy','MOTO','#c85a6a','Đỏ mận',createMotorbike,['body','wheels','engine','exhaust','saddle','handlebars','lights','mirrors','stabilizers']),
 ];
 // Parts travel this share of their authored delta, so the separated vehicle needs less room in the viewer.
 export const separationSpread=.75;

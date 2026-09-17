@@ -17,7 +17,11 @@ function run(command,args) {
   if (result.error || result.status !== 0) throw new Error(`${command}: ${result.error?.message || result.stderr}`);
   return result.stdout;
 }
-const recordings = [...allParts.map(part=>[part.id,part.name]),...Object.entries(audioMessages)];
+// Optional IDs limit generation to new narration: npm run audio:generate -- ladder hose
+const requested = new Set(process.argv.slice(2));
+const recordings = [...allParts.map(part=>[part.id,part.name]),...Object.entries(audioMessages)].filter(([id])=>!requested.size || requested.has(id));
+const unknown = [...requested].filter(id=>!recordings.some(([recorded])=>recorded===id));
+if (unknown.length) throw new Error(`Unknown narration IDs: ${unknown.join(', ')}`);
 for(const [id,text] of recordings) {
   const source=join(temporary,`${id}.aiff`);
   run('say',['-v','Linh (Vietnamese (Vietnam))','-r','150','-o',source,text]);

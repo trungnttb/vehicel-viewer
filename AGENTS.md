@@ -16,7 +16,7 @@
 
 ## Code map
 - `src/car.js`: geometry, semantic part metadata, independent explosion groups, picking IDs, highlight materials.
-- `src/vehicle-catalog.js`: all seven vehicles, exact IDs, factories and per-vehicle parts. `src/vehicle-kit.js` shares primitives; `src/work-vehicles.js` builds the six working vehicles.
+- `src/vehicle-catalog.js`: all eighteen vehicles, exact IDs, factories and per-vehicle parts. `src/vehicle-kit.js` shares primitives; `src/work-vehicles.js` builds every vehicle except the sedan.
 - `src/part-illustrations.js`, `src/vehicle-pictures.js`, `public/audio/vi/`: picture choices and Vietnamese narration. New IDs need matching images and audio.
 - `src/camera-fit.js`: camera-space framing of assembled/separated bounds, including tall cranes and long trailers.
 - `src/main.js`: routes, renderer, camera, part selection, speech and progress UI.
@@ -36,7 +36,7 @@
 - Speech prefers bundled Vietnamese audio in `public/audio/vi/`, then device voices. Add matching pictures/audio for new part IDs; preserve text and an honest failure fallback.
 
 ## Current boundaries
-- Seven live vehicles. Register new ones in the catalog; keep exact route matching, per-vehicle progress and resource disposal on model switches.
-- Driving controls must match the vehicle: road vehicles have steering wheels; the tracked excavator has joysticks. Check crane hook/cabin clearance through the full separation range.
+- Eighteen live vehicles. Register new ones in the catalog; keep exact route matching, per-vehicle progress and resource disposal on model switches.
+- Driving controls must match the vehicle: road vehicles have steering wheels; the tracked excavator has joysticks; the motorbike has handlebars. Check crane hook/cabin clearance through the full separation range. Vehicles that are not truck-shaped (excavator, road roller, wheel loader, forklift, tractor, bus, motorbike) build their own frame instead of `truckBase`.
 - No account, tracking, ads or purchases are part of the current app. Deployment is a self-hosted static site (Jenkins → Docker → Nginx UI). Bundled narration is synthesized with the local Vietnamese Linh voice, not a human recording.
 - Do not add gamification, time pressure or a new visual direction without a product request.

@@ -66,7 +66,7 @@ test('every part and spoken action has a bundled non-empty audio asset', () => {
 });
 
 test('catalog routes are exact and all semantic parts have recognizable illustrations', () => {
-  assert.equal(vehicles.length,7);
+  assert.equal(vehicles.length,18);
   assert.equal(vehicleById('unknown'),undefined);
   assert.equal(vehicleById('truck-extra'),undefined);
   assert.equal(new Set(vehicles.map(v=>v.id)).size,vehicles.length);
@@ -164,7 +164,8 @@ test('separated vehicles stay in frame and shrink only a little when parts move 
 });
 
 test('driving controls match the vehicle type and crane hook clears the cabin throughout separation',()=>{
-  for(const v of vehicles)assert.ok(v.parts.some(p=>p.id===(v.id==='excavator'?'joysticks':'steering')),`${v.id} needs driving controls`);
+  const controls={excavator:'joysticks',motorbike:'handlebars'};
+  for(const v of vehicles)assert.ok(v.parts.some(p=>p.id===(controls[v.id]??'steering')),`${v.id} needs driving controls`);
   const crane=vehicleById('crane').factory();
   const cabin=crane.root.children.find(g=>g.userData.part==='cabin');
   const hook=crane.root.children.find(g=>g.userData.part==='hook');
@@ -175,3 +176,73 @@ test('driving controls match the vehicle type and crane hook clears the cabin th
     assert.equal(hookBounds.intersectsBox(cabinBounds),false);
   }
 });
+
+test('fire truck ladder rests above the cab and stacked parts keep clear throughout separation',()=>{
+  const truck=vehicleById('fire-truck').factory();
+  // Per-mesh boxes: a whole-group box would count the tank's filler cap as touching the turntable at the far end.
+  const bounds=id=>truck.root.children.filter(g=>g.userData.part===id).flatMap(g=>g.children).map(mesh=>new Box3().setFromObject(mesh));
+  const pairs=[['ladder','cabin'],['ladder','beacon'],['ladder','turntable'],['turntable','water-tank'],['water-tank','lockers'],['hose','water-tank'],['hose','lockers'],['beacon','cabin']];
+  for(const amount of [0,.25,.5,.75,1]) {
+    truck.explode(amount*separationSpread);truck.root.updateMatrixWorld(true);
+    for(const [a,b] of pairs)for(const boxA of bounds(a))for(const boxB of bounds(b))
+      assert.equal(boxA.intersectsBox(boxB),false,`${a} touches ${b} at separation ${amount}`);
+    const lowestRung=Math.min(...bounds('ladder').map(box=>box.min.y)),cabinRoof=Math.max(...bounds('cabin').map(box=>box.max.y));
+    assert.ok(lowestRung>cabinRoof,'ladder must stay above the cab roof');
+  }
+  truck.explode(0);
+});
+
+const meshBoxes=(model,id)=>model.root.children.filter(g=>g.userData.part===id).flatMap(g=>g.children).map(mesh=>new Box3().setFromObject(mesh));
+function assertClearThroughSeparation(model,pairs) {
+  for(const amount of [0,.25,.5,.75,1]) {
+    model.explode(amount*separationSpread);model.root.updateMatrixWorld(true);
+    for(const [a,b] of pairs)for(const boxA of meshBoxes(model,a))for(const boxB of meshBoxes(model,b))
+      assert.equal(boxA.intersectsBox(boxB),false,`${a} touches ${b} at separation ${amount}`);
+  }
+  model.explode(0);
+}
+
+test('garbage truck rear loader parts keep clear while the bin moves away behind the truck',()=>{
+  const truck=vehicleById('garbage-truck').factory();
+  assertClearThroughSeparation(truck,[['garbage-body','tailgate'],['garbage-body','cabin'],['tailgate','bin-lift'],['bin-lift','trash-bin'],['beacon','cabin'],['trash-bin','lights']]);
+});
+
+test('road roller drum stays round, grounded and clear of the cab and rear parts',()=>{
+  const roller=vehicleById('road-roller').factory();
+  const [drum]=meshBoxes(roller,'roller-drum').sort((a,b)=>b.getSize(new Vector3()).x-a.getSize(new Vector3()).x);
+  const drumSize=drum.getSize(new Vector3());
+  assert.ok(Math.abs(drumSize.x-drumSize.y)<.01,'the drum must not be flattened');
+  assert.ok(drum.min.y>=0 && drum.min.y<.05,'the drum rolls on the ground');
+  for(const box of meshBoxes(roller,'wheels'))assert.ok(box.min.y>=0,'tyres must not sink under the floor');
+  assertClearThroughSeparation(roller,[['roller-drum','cabin'],['roller-drum','steering'],['roller-drum','wheels'],['engine','exhaust'],['engine','wheels'],['lights','cabin'],['seats','steering']]);
+  // The open canopy's posts surround the seat, so box overlap cannot be used; the roof must stay above the driver's place instead.
+  for(const amount of [0,.25,.5,.75,1]) {
+    roller.explode(amount*separationSpread);roller.root.updateMatrixWorld(true);
+    const roof=Math.max(...meshBoxes(roller,'cabin').map(box=>box.min.y));
+    for(const id of ['seats','steering'])for(const box of meshBoxes(roller,id))assert.ok(box.max.y<roof,`${id} reaches the canopy roof at separation ${amount}`);
+  }
+});
+
+// `apart`: neighbours that never touch. `joined`: parts mounted on each other (bucket on its arms, roof on the body) that touch when assembled and must be apart once fully separated.
+// Left out, checked in rendered views instead: enclosing structures (the bus shell around its door, the bike frame around its engine and saddle, forks inside pallet slots)
+// and tilted or diagonal members such as the loader arms and the tipped dump bed, whose bounding boxes cover neighbours the parts themselves do not reach.
+const clearance={
+  'dump-truck':{apart:[['dump-bed','cabin'],['sand','cabin']],joined:[['dump-bed','hydraulics']]},
+  tanker:{apart:[['fuel-tank','cabin'],['fuel-tank','valves'],['valves','wheels']]},
+  'tow-truck':{apart:[['flatbed','cabin'],['flatbed','towed-car'],['winch','towed-car'],['beacon','cabin']],joined:[['flatbed','winch']]},
+  'wheel-loader':{apart:[['bucket','wheels'],['boom','cabin'],['hydraulics','wheels'],['hydraulics','cabin'],['engine','wheels'],['engine','exhaust'],['doors','cabin'],['lights','cabin']],joined:[['bucket','boom']]},
+  forklift:{apart:[['mast','forks'],['mast','wheels'],['mast','cabin'],['counterweight','wheels'],['engine','seats'],['cargo','pallet'],['lights','cabin']],joined:[['counterweight','body']]},
+  tractor:{apart:[['engine','wheels'],['engine','exhaust'],['exhaust','cabin'],['plough','wheels'],['cabin','wheels'],['lights','cabin']]},
+  bus:{apart:[['roof','handrails'],['roof','windows'],['route-sign','windows'],['mirrors','body'],['engine','wheels'],['engine','seats'],['engine','handrails'],['engine','roof'],['steering','windows']],joined:[['roof','body']]},
+  motorbike:{apart:[['handlebars','mirrors'],['handlebars','lights'],['engine','wheels'],['exhaust','wheels'],['stabilizers','engine'],['stabilizers','wheels']]},
+};
+for(const [id,{apart,joined=[]}] of Object.entries(clearance)) {
+  test(`${id}: neighbouring parts keep clear throughout separation`,()=>{
+    const model=vehicleById(id).factory();
+    assertClearThroughSeparation(model,apart);
+    model.explode(separationSpread);model.root.updateMatrixWorld(true);
+    for(const [a,b] of joined)for(const boxA of meshBoxes(model,a))for(const boxB of meshBoxes(model,b))
+      assert.equal(boxA.intersectsBox(boxB),false,`${a} still touches ${b} when fully separated`);
+    model.explode(0);
+  });
+}

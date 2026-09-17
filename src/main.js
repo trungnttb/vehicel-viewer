@@ -223,7 +223,7 @@ function speakWithDevice(text) {
 function choosePart(id) {
   const part=partInfo.find(p=>p.id===id); if(!part) return;
   selected=id; visited.add(id); car?.select(id);
-  if (['engine','seats','steering','joysticks','axles','stretcher','first-aid','coupling'].includes(id) && explosion<.7) manualExplosion=1;
+  if (['engine','seats','steering','joysticks','axles','stretcher','first-aid','coupling','water-tank'].includes(id) && explosion<.7) manualExplosion=1;
   updateSelection(); speak(part);
 }
 function updateSelection() {
